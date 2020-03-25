@@ -1,0 +1,14 @@
+To credit for DDZ/Ratamahatta: https://web.archive.org/web/20000303203827/http://www.planetquake.com:80/polycount/cottages/evilb/quake.htm (brian collins aka Brian “EvilBastard” Collins’)
+
+Movement should feel like super mario world
+
+3rd person camera
+Always show 'laser pointer' based on mouse position projected onto ground or other objects. Character faces laser dot, camera looks at character from behind
+
+Laser pointer location is used to draw polygons that can be extruded. Polygon drawing should be guided to snap lines.
+
+Controls:
+    Shift click to select polygon surrounding surface beneath laser (for, e.g., going back to an extruded surface and extruding the whole thing some more)
+
+Snap lines:
+    Directions orthogonal to other lines in polygon
