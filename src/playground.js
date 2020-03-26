@@ -12,23 +12,32 @@ class Playground {
         this.player = player
 
         this.socket = io("http://localhost:3000")
-        this.socket.emit("player_input", {test: "testlblah"})
+        this.socket.emit("event", { type: "player_enter_request"})
 
-        this.socket.on("player_input_relay", data => {
-            switch (data.input_type) {
-                case "key_down":
+        this.socket.on("event", data => {
+            console.log("server event: ", data)
+
+            switch (data.type) {
+                case "player_enter":
                     this.serverKeyDown(data.key)
                     break;
-                case "key_up":
+                case "player_exit":
+                    this.serverKeyDown(data.key)
+                    break;
+                case "input_key_down":
+                    this.serverKeyDown(data.key)
+                    break;
+                case "input_key_up":
                     this.serverKeyUp(data.key)
                     break;
-                case "mouse_move":
+                case "input_mouse_move":
 
                     break;
-                case "click":
+                case "input_click":
 
                     break;
                 default:
+                    console.log("unrecognized server event: ", data)
                     break;
             }
         })
@@ -48,7 +57,7 @@ class Playground {
         if (!Playground.RECOGNIZED_KEYS.includes(key))
             return
 
-        this.socket.emit("player_input", { input_type: "key_down", key })
+        this.socket.emit("event", { type: "input_key_down", key })
     }
 
     handleKeyUp(e) {
@@ -57,15 +66,15 @@ class Playground {
         if (!Playground.RECOGNIZED_KEYS.includes(key))
             return
 
-        this.socket.emit("player_input", { input_type: "key_up", key })
+        this.socket.emit("event", { type: "input_key_up", key })
     }
 
     handleMouseMove(e) {
-        this.socket.emit("player_input", { input_type: "mouse_move" })
+        this.socket.emit("event", { type: "input_mouse_move" })
     }
 
     handleClick(e) {
-        this.socket.emit("player_input", {input_type: "click"})
+        this.socket.emit("event", { type: "input_click"})
     }
 }
 
