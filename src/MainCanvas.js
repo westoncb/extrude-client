@@ -106,12 +106,28 @@ class MainCanvas extends React.PureComponent {
         this.mount.appendChild(this.renderer.domElement);
 
         // STATS
-
         this.stats = new Stats();
         this.mount.appendChild(this.stats.dom);
+        
+        // EVENTS
+        this.mount.onclick = e => {
+            if (this.props.playground)
+                this.props.playground.handleClick(e)
+        }
+        this.mount.onkeydown = e => {
+            if (this.props.playground)
+                this.props.playground.handleKeyDown(e)
+        }
+        this.mount.onkeyup = e => {
+            if (this.props.playground)
+                this.props.playground.handleKeyUp(e)
+        }
+        this.mount.onmousemove = e => {
+            if (this.props.playground)
+                this.props.playground.handleMouseMove(e)
+        }
 
         // CONTROLS
-
         this.cameraControls = new OrbitControls(this.camera, this.renderer.domElement);
         this.cameraControls.target.set(0, 50, 0);
         this.cameraControls.update();

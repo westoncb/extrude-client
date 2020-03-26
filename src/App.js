@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import MainCanvas from './MainCanvas'
 import LoginPrompt from './components/LoginPrompt'
-import Playground from './playground'
+import Playground from './Playground'
 import Player from './Player'
 import './App.css';
 
