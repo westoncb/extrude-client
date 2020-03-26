@@ -26,6 +26,12 @@ import './MainCanvas.css'
 
 
 class MainCanvas extends React.PureComponent {
+    constructor(props) {
+        super(props)
+
+        console.log('Constructing MainCanvas', props)
+    }
+
     componentDidMount() {
         
 
