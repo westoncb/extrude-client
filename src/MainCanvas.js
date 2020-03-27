@@ -26,12 +26,6 @@ import './MainCanvas.css'
 
 
 class MainCanvas extends React.PureComponent {
-    constructor(props) {
-        super(props)
-
-        console.log('Constructing MainCanvas', props)
-    }
-
     componentDidMount() {
         
 
@@ -112,19 +106,19 @@ class MainCanvas extends React.PureComponent {
         // EVENTS
         this.mount.onclick = e => {
             if (this.props.playground)
-                this.props.playground.handleClick(e)
+                this.props.playground.localClick(e)
         }
         this.mount.onkeydown = e => {
             if (this.props.playground)
-                this.props.playground.handleKeyDown(e)
+                this.props.playground.localKeyDown(e)
         }
         this.mount.onkeyup = e => {
             if (this.props.playground)
-                this.props.playground.handleKeyUp(e)
+                this.props.playground.localKeyUp(e)
         }
         this.mount.onmousemove = e => {
             if (this.props.playground)
-                this.props.playground.handleMouseMove(e)
+                this.props.playground.localMouseMove(e)
         }
 
         // CONTROLS
