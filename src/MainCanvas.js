@@ -47,8 +47,16 @@ function MainCanvas() {
 
     const [players, setPlayers] = useState([])
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("grasslight-big.jpg"), [])
-
-    const playground = useMemo(() => new Playground(thePlayers => setPlayers(thePlayers)), [])
+    const playground = useMemo(() => {
+        if (!MainCanvas.playground) {
+            const pg = new Playground(thePlayers => setPlayers(thePlayers))
+            MainCanvas.playground = pg
+            return pg
+        } else {
+            MainCanvas.playground.setPlayers = thePlayers => setPlayers(thePlayers)
+            return MainCanvas.playground
+        }
+    }, [])
 
     return (
         <Canvas
