@@ -20,7 +20,7 @@ function LoginPrompt({logIn}) {
             </FormGroup>
 
             <Button onClick={() => {
-                logIn(new Player(name))
+                logIn()
             }}>Join</Button>
         </div>
     )
