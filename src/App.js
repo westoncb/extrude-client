@@ -27,7 +27,11 @@ function App() {
           <MainCanvas player={player} />
         }
 
-        <div className="overlay">
+        <div className="chat-window">
+          
+        </div>
+
+        <div className="screen-container">
               {!loggedIn &&
                   <LoginPrompt logIn={doLogin} />
               }
