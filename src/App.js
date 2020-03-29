@@ -1,11 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import MainCanvas from './MainCanvas'
 import LoginPrompt from './components/LoginPrompt'
-import Playground from './Playground'
 import Player from './Player'
 import './App.css';
 
-const QUICK_START = false
+const QUICK_START = true
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -18,7 +17,7 @@ function App() {
 
   useEffect(() => {
       if (QUICK_START)
-          doLogin({name: "weston", id: Math.random()})
+          doLogin(Player.generatePlayer())
   }, [])
 
   return (

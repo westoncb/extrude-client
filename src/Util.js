@@ -1,6 +1,16 @@
 import {Box3} from 'three'
 
 class Util {
+    static randString(length) {
+        var result = ''
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        var charactersLength = characters.length
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength))
+        }
+        return result
+    }
+
     /*
         Computes a bounding box which is the union of the geometry
         belonging to the passed in node and all descendent meshes.

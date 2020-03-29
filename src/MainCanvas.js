@@ -4,7 +4,7 @@ import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Canvas, extend, useThree, useUpdate } from 'react-three-fiber'
 import Playground from './Playground'
-import Player from './Player'
+import PlayerModel from './components/PlayerModel'
 
 import './MainCanvas.css'
 
@@ -76,7 +76,7 @@ function MainCanvas({player}) {
                 castShadow
             />
             {playground && 
-                players.map(player => <Player key={player.id} player={player} />)
+                players.map(player => <PlayerModel key={player.id} player={player} />)
             }
             <mesh receiveShadow rotation-x={- Math.PI / 2}>
                 <planeBufferGeometry attach="geometry" args={[16000, 16000]} />
