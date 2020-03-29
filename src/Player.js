@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react'
-import { MD2CharacterComplex } from 'three/examples/jsm/misc/MD2CharacterComplex.js';
 import { useFrame } from 'react-three-fiber'
 import { Clock } from 'three'
 import ModelFactory from './ModelFactory'
@@ -9,17 +8,20 @@ const clock = new Clock();
 
 function Player({ player}) {
     const [md2, setMd2] = useState(null)
+    const [height, setHeight] = useState(0)
 
     useMemo(() => {
         ModelFactory.getInstance().then(instance => {
+            const bbox = Util.computeCompositeBoundingBox(instance.root)
+
+            setHeight(bbox.getSize().y)
             setMd2(instance)
         })
     }, [])
 
-    useFrame(() => {
-        var delta = clock.getDelta();
-        md2.root.position.set(player.position.x, player.position.y, player.position.z)
-        md2.update(delta)
+    useFrame(info => {
+        md2.root.position.set(player.position.x, height/2 - 15, player.position.z)
+        md2.update(.012)
     })
 
     return (

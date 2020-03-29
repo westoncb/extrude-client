@@ -61,9 +61,8 @@ class ModelFactory {
     static async getInstance(skin = this.instanceIndex+=2 % this.skinCount) {
         const instance = new MD2CharacterComplex()
         instance.scale = MD2_SCALE
-        instance.controls = this.getControls()
-
-        console.log("getting skin: ", skin)
+        instance.controls = this.getControlsCopy()
+        instance.id = Math.random()
 
         return await this.basePromise.then(base => {
             instance.shareParts(base)
@@ -75,7 +74,7 @@ class ModelFactory {
         })
     }
 
-    static getControls() {
+    static getControlsCopy() {
         const controls = {}
         Object.keys(MD2_CONTROLS).forEach(key => controls[key] = MD2_CONTROLS[key])
         return controls
