@@ -20,8 +20,10 @@ function PlayerModel({ player}) {
     }, [])
 
     useFrame(info => {
-        md2.root.position.set(player.position.x, height/2 - 15, player.position.z)
-        md2.update(.012)
+        if (md2) {
+            md2.root.position.set(player.position.x, height / 2 - 15, player.position.z)
+            md2.update(.012)
+        }
     })
 
     return (
