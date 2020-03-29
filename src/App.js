@@ -14,13 +14,13 @@ function App() {
 
   const doLogin = (player) => {
         setPlayer(player)
-        setPlayground(new Playground(player))
+        // setPlayground(new Playground(player))
         setLoggedIn(true)
   }
 
   useEffect(() => {
       if (QUICK_START)
-          doLogin(new Player("weston"))
+          doLogin()
   }, [])
 
   return (

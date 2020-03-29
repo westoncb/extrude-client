@@ -1,9 +1,10 @@
-import React, {useMemo, useEffect} from 'react'
+import React, {useMemo, useEffect, useState} from 'react'
 import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Canvas, extend, useThree, useUpdate } from 'react-three-fiber'
-// import { MD2CharacterComplex } from './jsm/misc/MD2CharacterComplex.js';
+import Playground from './Playground'
+import Player from './Player'
 
 import './MainCanvas.css'
 
@@ -23,8 +24,6 @@ extend({ OrbitControls })
 
 // };
 
-const SCREEN_WIDTH = window.innerWidth;
-const SCREEN_HEIGHT = window.innerHeight;
 const stats = new Stats()
 
 const CameraController = () => {
@@ -45,26 +44,46 @@ const CameraController = () => {
 }
 
 function MainCanvas() {
+
+    const [players, setPlayers] = useState([])
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("grasslight-big.jpg"), [])
 
+    const playground = useMemo(() => new Playground(thePlayers => setPlayers(thePlayers)), [])
+
     return (
-        <Canvas style={{backgroundColor: "#123"}} gl={{ antialias: false, alpha: true }} pixelRatio={window.devicePixelRatio} camera={{ position: [0, 150, 1300], near: 1, far: 4000}} size={[SCREEN_WIDTH, SCREEN_HEIGHT]} >
+        <Canvas
+            style={{ backgroundColor: "#123" }} 
+            gl={{ antialias: false, alpha: true}}
+            pixelRatio={window.devicePixelRatio}
+            camera={{ position: [0, 150, 1300], near: 1, far: 4000 }}
+            shadowMap
+            onCreated={({ gl }) => {
+                gl.toneMapping = THREE.ReinhardToneMapping
+                gl.outputEncoding = THREE.sRGBEncoding
+                gl.shadowMap.enabled = true
+                gl.shadowMap.type = THREE.PCFSoftShadowMap
+            }}
+        >
+
             <CameraController/>
             <fog attach="fog" args={[0x112233, 1000, 4000]} />
             <ambientLight args={[0x222222]} />
             <directionalLight
-                args={[0xffffff, 2.25]}
-                position={THREE.Vector3(200, 450, 500)}
+                args={[0xffffff, 2.5]}
+                position={[250, 450, 500]}
                 shadow-camera-left={-1000}
-                shadow-camera-bottom={-350}
+                shadow-camera-bottom={-1000}
                 shadow-camera-right={1000}
-                shadow-camera-top={350}
-                shadow-camera-near={100}
+                shadow-camera-top={1000}
+                shadow-camera-near={1}
                 shadow-camera-far={1200}
                 shadow-mapSize-width={1024}
-                shadow-mapSize-height={512}
+                shadow-mapSize-height={1024}
                 castShadow
             />
+            {playground && 
+                players.map(player => <Player key={player.id} id={player.id} name={player.name} />)
+            }
             <mesh receiveShadow rotation-x={- Math.PI / 2}>
                 <planeBufferGeometry attach="geometry" args={[16000, 16000]} />
                 <meshLambertMaterial attach="material" color={0x445566}>

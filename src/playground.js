@@ -1,22 +1,32 @@
 import io from "socket.io-client"
 import PGRenderer from './PGRenderer'
 
+const isProduction = process.env.NODE_ENV !== 'development'
+const port = 3000
+const devURL = "localhost:" + port
+const prodURL = "https://nameless-depths-23573.herokuapp.com"
+const serverURL = isProduction ? prodURL : devURL
+
 class Playground {
     player = null
     socket = null
     renderer = new PGRenderer()
+    allPlayers = []
 
     static RECOGNIZED_KEYS = ["a", "w", "s", "d"]
     static KEY_TO_DIRECTION = { a: 'left', w: "up", s: "down", d: "right"}
 
-    constructor(player) {
-        this.player = player
+    constructor(setPlayers) {
+        this.player = {id: 1, name: "weston"}
+        this.setPlayers = setPlayers
 
-        this.connectToServer(player)    
+        console.log("CONSTRUCT!!!")
+
+        this.connectToServer(this.player)    
     }
 
     connectToServer(player) {
-        this.socket = io("http://localhost:3000")
+        this.socket = io(serverURL)
         this.socket.emit("event", { type: "player_enter_request", player })
 
         this.socket.on("event", data => {
@@ -29,7 +39,13 @@ class Playground {
     handleServerEvent(event) {
         switch (event.type) {
             case "player_enter":
-                
+                console.log("player_enter: ", event.player)
+                this.allPlayers = this.allPlayers.concat(event.player)
+
+                console.log("test", this.setPlayers, this.allPlayers)
+                if (this.setPlayers) {
+                    this.setPlayers(this.allPlayers)
+                }
                 break;
             case "player_exit":
                 
