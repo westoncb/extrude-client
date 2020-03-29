@@ -1,10 +1,23 @@
-import React, {useMemo} from 'react'
+import React, { useMemo, useState } from 'react'
 import { MD2CharacterComplex } from 'three/examples/jsm/misc/MD2CharacterComplex.js';
+import { useFrame } from 'react-three-fiber'
+import { Clock } from 'three'
 import Util from './Util'
 
-function Player({id, name}) {
+const clock = new Clock();
 
-    const model = useMemo(() => {
+function Player({ player}) {
+    const [md2Controls, setMd2Controls] = useState({
+        moveForward: false,
+        moveBackward: false,
+        moveLeft: false,
+        moveRight: false,
+        crouch: false,
+        jump: false,
+        attack: false
+    })
+
+    const md2 = useMemo(() => {
         const configOgro = {
 
             baseUrl: "models/ogro/",
@@ -32,21 +45,28 @@ function Player({id, name}) {
         const character = new MD2CharacterComplex()
         character.scale = 4;
         character.onLoadComplete = () => {
-            const bbox = Util.computeCompositeBoundingBox(character.root)
-
-            character.root.position.set(Util.rand(-250, 250), bbox.getSize().y / 2, Util.rand(-250, 250) + 400)
+            character.root.position.set(player.position.x, 0, player.position.z)
             character.enableShadows(true)
             character.setWeapon(0);
             character.setSkin(2);
+            character.controls = md2Controls
         }
         character.loadParts(configOgro);
 
-        return character.root
+        return character
     }, [])
+
+    useFrame(() => {
+        var delta = clock.getDelta();
+        md2.root.position.set(player.position.x, player.position.y, player.position.z)
+
+        md2.controls = md2Controls
+        md2.update(delta)
+    })
 
     return (
         <mesh>
-            <primitive object={model} position={[0, 0, 0]} />
+            <primitive object={md2.root} />
         </mesh>
     )
 }

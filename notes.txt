@@ -2,6 +2,13 @@ To credit for DDZ/Ratamahatta: https://web.archive.org/web/20000303203827/http:/
 
 Movement should feel like super mario world
 
+Network behavior:
+    - Update local simulation from local keypresses immediately
+    - Treat server-relayed keypresses as if they were additional local character actions: simulate on reception
+    - However, if the action is time-extended, between e.g. keydown and keyup, then it should be re-simulated on reception of the closing action. This can be done by using a second copy of the gameloop/update cycle that's detached from rendering/no frame-pause--it just computes game states from a starting state and either A) a list of input events, or B) a function that maps time -> input device state...
+    - Alternatively (this seems better), clients can send the affected state deltas whenever a time-extended event completes, the server relays it, and the clients just merge the delta into their own local state (server does this too actually).
+    - The server also needs to relay the complete state to incoming players however. If we don't want to simulate on the server, the server can request the full state from an already connected client and then relay that to the incoming client.
+
 3rd person camera
 Always show 'laser pointer' based on mouse position projected onto ground or other objects. Character faces laser dot, camera looks at character from behind
 

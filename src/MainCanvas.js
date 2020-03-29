@@ -10,20 +10,6 @@ import './MainCanvas.css'
 
 extend({ OrbitControls })
 
-// var characters = [];
-// var nCharacters = 0;
-
-// var cameraControls;
-
-// var controls = {
-
-//     moveForward: false,
-//     moveBackward: false,
-//     moveLeft: false,
-//     moveRight: false
-
-// };
-
 const stats = new Stats()
 
 const CameraController = () => {
@@ -43,13 +29,13 @@ const CameraController = () => {
     return null;
 }
 
-function MainCanvas() {
+function MainCanvas({player}) {
 
     const [players, setPlayers] = useState([])
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("grasslight-big.jpg"), [])
     const playground = useMemo(() => {
         if (!MainCanvas.playground) {
-            const pg = new Playground(thePlayers => setPlayers(thePlayers))
+            const pg = new Playground(player, thePlayers => setPlayers(thePlayers))
             MainCanvas.playground = pg
             return pg
         } else {
@@ -90,7 +76,7 @@ function MainCanvas() {
                 castShadow
             />
             {playground && 
-                players.map(player => <Player key={player.id} id={player.id} name={player.name} />)
+                players.map(player => <Player key={player.id} player={player} />)
             }
             <mesh receiveShadow rotation-x={- Math.PI / 2}>
                 <planeBufferGeometry attach="geometry" args={[16000, 16000]} />

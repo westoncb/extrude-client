@@ -5,28 +5,28 @@ import Playground from './Playground'
 import Player from './Player'
 import './App.css';
 
-const QUICK_START = true
+const QUICK_START = false
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [player, setPlayer] = useState(null)
-  const [playground, setPlayground] = useState(null)
 
   const doLogin = (player) => {
         setPlayer(player)
-        // setPlayground(new Playground(player))
         setLoggedIn(true)
   }
 
   useEffect(() => {
       if (QUICK_START)
-          doLogin()
+          doLogin({name: "weston", id: Math.random()})
   }, [])
 
   return (
     <div className="App bp3-dark">
 
-        <MainCanvas playground={playground}/>
+        {player &&
+          <MainCanvas player={player} />
+        }
 
         <div className="overlay">
               {!loggedIn &&

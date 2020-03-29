@@ -11,16 +11,14 @@ class Playground {
     player = null
     socket = null
     renderer = new PGRenderer()
-    allPlayers = []
+    state = {players: {}}
 
     static RECOGNIZED_KEYS = ["a", "w", "s", "d"]
     static KEY_TO_DIRECTION = { a: 'left', w: "up", s: "down", d: "right"}
 
-    constructor(setPlayers) {
-        this.player = {id: 1, name: "weston"}
+    constructor(player, setPlayers) {
+        this.player = player
         this.setPlayers = setPlayers
-
-        console.log("CONSTRUCT!!!")
 
         this.connectToServer(this.player)    
     }
@@ -40,15 +38,20 @@ class Playground {
         switch (event.type) {
             case "player_enter":
                 console.log("player_enter: ", event.player)
-                this.allPlayers = this.allPlayers.concat(event.player)
+                this.state.players[event.player.id] = event.player
 
-                console.log("test", this.setPlayers, this.allPlayers)
-                if (this.setPlayers) {
-                    this.setPlayers(this.allPlayers)
-                }
+                this.setPlayers(this.getPlayersArray())
                 break;
             case "player_exit":
-                
+                delete this.state.players[event.player.id]
+                this.setPlayers(this.getPlayersArray())
+                break;
+            case "full_state_request":
+                this.socket.emit("event", { type: "full_state_response", state: this.state})
+                break;
+            case "full_state_update":
+                this.state = event.state
+                this.setPlayers(this.getPlayersArray())
                 break;
             case "input_key_down":
                 this.serverKeyDown(event)
@@ -66,6 +69,10 @@ class Playground {
                 console.log("unrecognized server event: ", event)
                 break;
         }
+    }
+
+    getPlayersArray() {
+        return Object.keys(this.state.players).map(key => this.state.players[key])
     }
 
     /////

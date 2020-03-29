@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import './LoginPrompt.css'
 import {FormGroup, InputGroup, Button} from '@blueprintjs/core'
-import Player from '../Player'
+import Util from '../Util'
+import { Vector3 } from 'three';
 
 function LoginPrompt({logIn}) {
     const [name, setName] = useState("")
@@ -20,7 +21,7 @@ function LoginPrompt({logIn}) {
             </FormGroup>
 
             <Button onClick={() => {
-                logIn()
+                logIn({ name, id: Math.random(), position: new Vector3(Util.rand(-250, 250), 0, Util.rand(-250, 250))})
             }}>Join</Button>
         </div>
     )
