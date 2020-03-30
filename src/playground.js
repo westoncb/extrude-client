@@ -1,6 +1,6 @@
 import io from "socket.io-client"
 import Player from './Player'
-import React, {useEffect, useMemo} from 'react'
+import {throttle} from 'lodash-es'
 
 const isProduction = process.env.NODE_ENV !== 'development'
 const port = 3000
@@ -44,6 +44,8 @@ class Playground {
         this.socket.on("reconnect", data => {
             this.socket.emit("event", { type: "player_enter_request", player })
         })
+
+        this.sendMouseMove = throttle(() => this.socket.emit("event", { type: "input_mouse_move", playerId: this.localPlayerId }), 500)
     }
 
     handleServerEvent(event) {
@@ -156,7 +158,7 @@ class Playground {
     }
 
     localMouseMove(e) {
-        // this.socket.emit("event", { type: "input_mouse_move", playerId: this.localPlayerId })
+        this.sendMouseMove()
     }
 
     localClick(e) {
