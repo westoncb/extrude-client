@@ -76,6 +76,10 @@ class Util {
             y: vectorCopy.y,
         };
     }
+
+    static exponentialEaseOut(k) {
+        return k === 1 ? 1 : - Math.pow(2, - 10 * k) + 1;
+    }
 }
 
 export default Util

@@ -1,4 +1,6 @@
 import { MD2CharacterComplex } from 'three/examples/jsm/misc/MD2CharacterComplex.js';
+import { MathUtils } from 'three'
+import Util from './Util'
 
 const WEAPONS_ENABLED = true
 const MD2_SCALE = 4
@@ -39,9 +41,8 @@ class ModelFactory {
                 crouchAttach: "crattack"
             },
 
-            walkSpeed: 350,
+            walkSpeed: 500,
             crouchSpeed: 175
-
         }
 
         this.skinCount = configOgro.skins.length
@@ -58,6 +59,78 @@ class ModelFactory {
         this.base.loadParts(configOgro);
     }
 
+    static customizeMovement(instance) {
+
+        // We use this to override a function defined
+        // on MD2CharacterComplex
+        const customUpdateMovementModel = self => {
+            return delta => {
+                self.angularSpeed = 4
+                var controls = self.controls;
+
+                // speed based on controls
+
+                if (controls.crouch) self.maxSpeed = self.crouchSpeed;
+                else self.maxSpeed = self.walkSpeed;
+
+                self.maxReverseSpeed = - self.maxSpeed;
+
+                if (controls.moveForward) self.speed = self.maxSpeed//MathUtils.clamp(self.speed + delta * self.frontAcceleration, self.maxReverseSpeed, self.maxSpeed);
+                if (controls.moveBackward) self.speed = self.maxReverseSpeed//MathUtils.clamp(self.speed - delta * self.backAcceleration, self.maxReverseSpeed, self.maxSpeed);
+
+                // orientation based on controls
+                // (don't just stand while turning)
+
+                var dir = 1;
+
+                if (controls.moveLeft) {
+
+                    self.bodyOrientation += delta * self.angularSpeed;
+                    self.speed = MathUtils.clamp(self.speed + dir * delta * self.frontAcceleration, self.maxReverseSpeed, self.maxSpeed);
+
+                }
+
+                if (controls.moveRight) {
+
+                    self.bodyOrientation -= delta * self.angularSpeed;
+                    self.speed = MathUtils.clamp(self.speed + dir * delta * self.frontAcceleration, self.maxReverseSpeed, self.maxSpeed);
+
+                }
+
+                // speed decay
+
+                if (!(controls.moveForward || controls.moveBackward)) {
+
+                    if (self.speed > 0) {
+
+                        const k = Util.exponentialEaseOut(self.speed / self.maxSpeed);
+                        self.speed = MathUtils.clamp(self.speed - k * delta * self.frontDecceleration, 0, self.maxSpeed);
+
+                    } else {
+
+                        const k = Util.exponentialEaseOut(self.speed / self.maxReverseSpeed);
+                        self.speed = MathUtils.clamp(self.speed + k * delta * self.backAcceleration, self.maxReverseSpeed, 0);
+
+                    }
+
+                }
+
+                // displacement
+
+                const forwardDelta = self.speed * delta;
+
+                self.root.position.x += Math.sin(self.bodyOrientation) * forwardDelta;
+                self.root.position.z += Math.cos(self.bodyOrientation) * forwardDelta;
+
+                // steering
+
+                self.root.rotation.y = self.bodyOrientation;
+            }
+        }
+
+        instance.updateMovementModel = customUpdateMovementModel(instance)
+    }
+
     static async getModelInstance(skin = this.instanceIndex) {
         this.instanceIndex = (this.instanceIndex + 1) % this.skinCount
 
@@ -65,6 +138,7 @@ class ModelFactory {
         instance.scale = MD2_SCALE
         instance.controls = this.getControlsCopy()
         instance.id = Math.random()
+        this.customizeMovement(instance)
 
         return await this.basePromise.then(base => {
             instance.shareParts(base)
