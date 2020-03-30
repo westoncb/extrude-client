@@ -1,5 +1,4 @@
 import io from "socket.io-client"
-import PGRenderer from './PGRenderer'
 import Player from './Player'
 import React, {useEffect, useMemo} from 'react'
 
@@ -10,9 +9,8 @@ const prodURL = "https://nameless-depths-23573.herokuapp.com"
 const serverURL = isProduction ? prodURL : devURL
 
 class Playground {
-    player = null
+    localPlayerId
     socket = null
-    renderer = new PGRenderer()
     state = {players: {}}
     messages = []
 
@@ -20,11 +18,11 @@ class Playground {
     static KEY_TO_DIRECTION = { a: 'left', w: "up", s: "down", d: "right"}
 
     constructor(player, updatePlayers, updateMessagesFunc) {
-        this.player = player
+        this.localPlayerId = player.id
         this.updatePlayers = updatePlayers
         this.updateMessagesFunc = updateMessagesFunc
 
-        this.connectToServer(this.player)    
+        this.connectToServer(player)
     }
 
     connectToServer(player) {
@@ -69,6 +67,7 @@ class Playground {
                 this.updatePlayers(this.getPlayersArray())
                 break;
             case "input_key_down":
+                console.log("GOT SERVER KEY DOWN", event, "(playerId)", this.localPlayerId)
                 this.serverKeyDown(event)
                 break;
             case "input_key_up":
@@ -114,11 +113,20 @@ class Playground {
     ////
 
     serverKeyDown(event) {
-        this.renderer.startPlayerMovement(event.playerId, Playground.KEY_TO_DIRECTION[event.key])
+        if (event.playerId === this.localPlayerId)
+            return
+
+        const key = event.key
+        this.state.players[event.playerId].keyStates[key] = true
+        console.log("just set that keystate down for: ", key)
     }
 
     serverKeyUp(event) {
-        this.renderer.stopPlayerMovement(event.playerId, Playground.KEY_TO_DIRECTION[event.key])
+        if (event.playerId === this.localPlayerId)
+            return
+
+        const key = event.key
+        this.state.players[event.playerId].keyStates[key] = false
     }
 
     /////
@@ -131,9 +139,9 @@ class Playground {
         if (!Playground.RECOGNIZED_KEYS.includes(key))
             return
 
-        this.state.players[this.player.id].keyStates[key] = true
+        this.state.players[this.localPlayerId].keyStates[key] = true
 
-        this.socket.emit("event", { type: "input_key_down", playerId: this.player.id, key })
+        this.socket.emit("event", { type: "input_key_down", playerId: this.localPlayerId, key })
     }
 
     localKeyUp(e) {
@@ -142,21 +150,21 @@ class Playground {
         if (!Playground.RECOGNIZED_KEYS.includes(key))
             return
 
-        this.state.players[this.player.id].keyStates[key] = false
+        this.state.players[this.localPlayerId].keyStates[key] = false
 
-        this.socket.emit("event", { type: "input_key_up", playerId: this.player.id, key })
+        this.socket.emit("event", { type: "input_key_up", playerId: this.localPlayerId, key })
     }
 
     localMouseMove(e) {
-        this.socket.emit("event", { type: "input_mouse_move", playerId: this.player.id })
+        // this.socket.emit("event", { type: "input_mouse_move", playerId: this.localPlayerId })
     }
 
     localClick(e) {
-        this.socket.emit("event", { type: "input_click", playerId: this.player.id})
+        this.socket.emit("event", { type: "input_click", playerId: this.localPlayerId})
     }
 
     sendChatMessage(message) {
-        this.socket.emit("event", {type: "chat_message", message, playerId: this.player.id, time: new Date()})
+        this.socket.emit("event", {type: "chat_message", message, playerId: this.localPlayerId, time: new Date()})
     }
 }
 

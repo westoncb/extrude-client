@@ -4,7 +4,7 @@ import LoginPrompt from './components/LoginPrompt'
 import Player from './Player'
 import './App.css';
 
-const QUICK_START = true
+const QUICK_START = false
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
