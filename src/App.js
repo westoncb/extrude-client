@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import MainCanvas from './MainCanvas'
 import LoginPrompt from './components/LoginPrompt'
-import Overlay from './components/Overlay'
 import Player from './Player'
 import './App.css';
 
