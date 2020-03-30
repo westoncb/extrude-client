@@ -11,12 +11,14 @@ function LoginPrompt({logIn}) {
         setName(text)
     }
 
+    const handleKeyPress = e => e.which === 13 ? logIn(Player.create(name)) : ""
+
     return (
         <div className="login-container bp3-light">
             <FormGroup
                 label="Choose a name to use:"
             >
-                <InputGroup placeholder="name..." large onChange={handleTextChange}/>
+                <InputGroup autoFocus placeholder="name..." large onChange={handleTextChange} onKeyDown={handleKeyPress}/>
             </FormGroup>
 
             <Button onClick={() => {
