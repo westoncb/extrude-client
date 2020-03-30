@@ -25,4 +25,5 @@ Snap lines:
     Directions orthogonal to other lines in polygon
 
 
+SSAOPass example: https://codesandbox.io/s/react-three-fiber-blob-qv9ww?from-embed
 Heroku server repo: https://git.heroku.com/nameless-depths-23573.git
