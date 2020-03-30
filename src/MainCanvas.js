@@ -5,6 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Canvas, extend, useThree, useFrame } from 'react-three-fiber'
 import Playground from './Playground'
 import PlayerView from './components/PlayerView'
+import ChatWindow from './components/ChatWindow'
 // import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 // import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
@@ -47,10 +48,12 @@ const CameraController = () => {
 
 function MainCanvas({player}) {
     const [players, setPlayers] = useState([])
+    const [messages, setMessages] = useState([])
     const [playground, setPlayground] = useState(null)
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("grasslight-big.jpg"), [])
+
     useEffect(() => {
-        setPlayground(new Playground(player, thePlayers => setPlayers(thePlayers)))
+        setPlayground(new Playground(player, players => setPlayers(players), messages => setMessages(messages)))
     }, [player])
 
     return (
@@ -85,7 +88,7 @@ function MainCanvas({player}) {
                     castShadow
                 />
 
-                {players.map(player => <PlayerView key={player.id} player={player} />)}
+                {players.map(player => <PlayerView key={player.id} player={player} messages={player.visibleMessages} />)}
 
                 <mesh receiveShadow rotation-x={- Math.PI / 2}>
                     <planeBufferGeometry attach="geometry" args={[16000, 16000]} />
@@ -94,9 +97,9 @@ function MainCanvas({player}) {
                     </meshLambertMaterial>
                 </mesh>
             </Canvas>
-            <div className="chat-window">
-
-            </div>
+            {playground && 
+                <ChatWindow sendChatMessage={playground.sendChatMessage.bind(playground)} messages={messages} />
+            }
         </div>
     )
 }

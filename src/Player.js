@@ -6,8 +6,9 @@ class Player {
     static create(name = Util.randString(5)) {
         return  {
                     name,
-                    id: Math.round(Math.random() * 10000),
-                    position: new Vector3(Util.rand(-250, 250), 0, Util.rand(-250, 250))
+                    id: ""+Math.round(Math.random() * 10000), //Important this is a string!
+                    position: new Vector3(Util.rand(-250, 250), 0, Util.rand(-250, 250)),
+                    visibleMessages: []
                 }
     }
 
@@ -17,8 +18,8 @@ class Player {
     }
 
     static removeOldestMessage(player) {
-        const visibleMessages = Player.visibleMessages.slice()
-        visibleMessages.unshift()
+        const visibleMessages = player.visibleMessages.slice()
+        visibleMessages.shift()
         return {...player, visibleMessages}
     }
 }

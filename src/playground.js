@@ -1,6 +1,7 @@
 import io from "socket.io-client"
 import PGRenderer from './PGRenderer'
 import Player from './Player'
+import React, {useEffect, useMemo} from 'react'
 
 const isProduction = process.env.NODE_ENV !== 'development'
 const port = 3000
@@ -13,13 +14,15 @@ class Playground {
     socket = null
     renderer = new PGRenderer()
     state = {players: {}}
+    messages = []
 
     static RECOGNIZED_KEYS = ["a", "w", "s", "d"]
     static KEY_TO_DIRECTION = { a: 'left', w: "up", s: "down", d: "right"}
 
-    constructor(player, setPlayers) {
+    constructor(player, updatePlayers, updateMessagesFunc) {
         this.player = player
-        this.setPlayers = setPlayers
+        this.updatePlayers = updatePlayers
+        this.updateMessagesFunc = updateMessagesFunc
 
         this.connectToServer(this.player)    
     }
@@ -33,6 +36,16 @@ class Playground {
 
             this.handleServerEvent(data)
         })
+
+        this.socket.on("disconnect", data => {
+            // This is a hack: it's not a server event, but we
+            // want to use the same logic for now
+            this.handleServerEvent({type: "player_exit", player})
+        })
+
+        this.socket.on("reconnect", data => {
+            this.socket.emit("event", { type: "player_enter_request", player })
+        })
     }
 
     handleServerEvent(event) {
@@ -40,18 +53,20 @@ class Playground {
             case "player_enter":
                 console.log("player_enter: ", event.player)
                 this.state.players[event.player.id] = event.player
-                this.setPlayers(this.getPlayersArray())
+                this.updatePlayers(this.getPlayersArray())
                 break;
             case "player_exit":
-                delete this.state.players[event.player.id]
-                this.setPlayers(this.getPlayersArray())
+                if (this.state.players[event.player.id]) {
+                    delete this.state.players[event.player.id]
+                    this.updatePlayers(this.getPlayersArray())
+                }
                 break;
             case "full_state_request":
                 this.socket.emit("event", { type: "full_state_response", state: this.state})
                 break;
             case "full_state_update":
                 this.state = event.state
-                this.setPlayers(this.getPlayersArray())
+                this.updatePlayers(this.getPlayersArray())
                 break;
             case "input_key_down":
                 this.serverKeyDown(event)
@@ -65,14 +80,24 @@ class Playground {
             case "input_click":
 
                 break;
-            case "player_message":
+            case "chat_message":
+
+                if (!this.state.players[event.playerId])
+                    break;
 
                 const player = this.state.players[event.playerId]
-                this.state.players[event.playerId] = Player.addMessage(player, event.message)
+                const message = {...event, player}
+                const messageDisplayTime = 5000 + (1000 * Math.floor(message.message.length / 100))
+                this.state.players = { ...this.state.players, [event.playerId]: Player.addMessage(player, message)}
 
                 setTimeout(() => {
-                    this.state.players[event.playerId] = Player.removeOldestMessage(player)
-                }, 3000)
+                    this.state.players = { ...this.state.players, [event.playerId]: Player.removeOldestMessage(this.state.players[event.playerId])}
+                    this.updatePlayers(Object.values(this.state.players))
+                }, messageDisplayTime)
+
+                this.messages = this.messages.concat(message)
+                this.updateMessagesFunc(this.messages)
+                this.updatePlayers(Object.values(this.state.players))
                 break;
             default:
                 console.log("unrecognized server event: ", event)
@@ -124,6 +149,10 @@ class Playground {
 
     localClick(e) {
         this.socket.emit("event", { type: "input_click", playerId: this.player.id})
+    }
+
+    sendChatMessage(message) {
+        this.socket.emit("event", {type: "chat_message", message, playerId: this.player.id, time: new Date()})
     }
 }
 

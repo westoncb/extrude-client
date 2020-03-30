@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { useFrame, Dom } from 'react-three-fiber'
 import ModelFactory from '../ModelFactory'
 import Util from '../Util'
+import './PlayerView.css'
 
-function PlayerView({ player }) {
+function PlayerView({ player, messages }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
 
@@ -31,6 +32,12 @@ function PlayerView({ player }) {
                     <Dom center position={[player.position.x, player.position.y, player.position.z]}>
                         <div className="scene-label">{player.name}</div>
                     </Dom>
+
+                    {messages.map((message, i) => (
+                        <Dom key={message.time} center position={[player.position.x, player.position.y + height*1.25, player.position.z]}>
+                            <div style={{transform: `translateY(${-i*2.1}rem)`}} className="speech-bubble">{message.message}</div>
+                        </Dom>
+                    ))}
                 </>
             }
         </mesh>
