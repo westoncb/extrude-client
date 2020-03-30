@@ -16,7 +16,7 @@ class Playground {
     state = {players: {}}
     messages = []
 
-    static RECOGNIZED_KEYS = ["a", "w", "s", "d"]
+    static RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q"]
     static KEY_TO_DIRECTION = { a: 'left', w: "up", s: "down", d: "right"}
 
     constructor(player, updatePlayers, updateMessagesFunc) {
@@ -131,6 +131,8 @@ class Playground {
         if (!Playground.RECOGNIZED_KEYS.includes(key))
             return
 
+        this.state.players[this.player.id].keyStates[key] = true
+
         this.socket.emit("event", { type: "input_key_down", playerId: this.player.id, key })
     }
 
@@ -139,6 +141,8 @@ class Playground {
 
         if (!Playground.RECOGNIZED_KEYS.includes(key))
             return
+
+        this.state.players[this.player.id].keyStates[key] = false
 
         this.socket.emit("event", { type: "input_key_up", playerId: this.player.id, key })
     }

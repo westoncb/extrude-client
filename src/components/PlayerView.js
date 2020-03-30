@@ -14,13 +14,22 @@ function PlayerView({ player, messages }) {
 
             setHeight(bbox.getSize().y)
             setMd2(instance)
+
+            instance.root.position.set(player.position.x, instance.root.position.y, player.position.z)
         })
     }, [])
 
     useFrame(info => {
         if (md2) {
-            md2.root.position.set(player.position.x, md2.root.position.y, player.position.z)
-            md2.update(.012)
+            md2.controls.moveForward = player.keyStates['w']
+            md2.controls.moveBackward = player.keyStates['s']
+            md2.controls.moveLeft = player.keyStates['a']
+            md2.controls.moveRight = player.keyStates['d']
+            md2.controls.jump = player.keyStates['q']
+            md2.controls.attack = player.keyStates['f']
+            md2.update(.016)
+            player.position.x = md2.root.position.x
+            player.position.z = md2.root.position.z
         }
     })
 

@@ -16,7 +16,7 @@ extend({ OrbitControls })
 
 const stats = new Stats()
 
-const CameraController = () => {
+const CameraController = ({playground}) => {
     const { camera, gl } = useThree();
     useFrame(() => stats.update())
     useEffect(
@@ -29,7 +29,28 @@ const CameraController = () => {
             };
         },
         [camera, gl]
-    );
+    )
+
+    // should be in a different component...
+    useEffect(() => {
+        gl.domElement.onclick = e => {
+            if (playground)
+                playground.localClick(e)
+        }
+        gl.domElement.onkeydown = e => {
+            if (playground)
+                playground.localKeyDown(e)
+        }
+        gl.domElement.onkeyup = e => {
+            if (playground)
+                playground.localKeyUp(e)
+        }
+        gl.domElement.onmousemove = e => {
+            if (playground)
+                playground.localMouseMove(e)
+        }
+    }, [gl, playground])
+
     return null;
 }
 
@@ -59,7 +80,7 @@ function MainCanvas({player}) {
     return (
         <div className="main-canvas-container">
             <Canvas
-                style={{ backgroundColor: "#123" }}
+                style={{ backgroundColor: "#789" }}
                 gl={{ antialias: false, alpha: true }}
                 pixelRatio={window.devicePixelRatio}
                 camera={{ position: [0, 150, 1300], near: 1, far: 4000 }}
@@ -71,18 +92,18 @@ function MainCanvas({player}) {
                 }}
             >
                 {/* <Effects /> */}
-                <CameraController />
-                <fog attach="fog" args={[0x112233, 1000, 4000]} />
+                <CameraController playground={playground} />
+                <fog attach="fog" args={[0x778899, 1000, 4000]} />
                 <ambientLight args={[0x888888]} />
                 <directionalLight
                     args={[0xffffff, 8]}
-                    position={[250, 450, 500]}
+                    position={[250, 4500, 500]}
                     shadow-camera-left={-1000}
                     shadow-camera-bottom={-1000}
                     shadow-camera-right={1000}
                     shadow-camera-top={1000}
                     shadow-camera-near={1}
-                    shadow-camera-far={1200}
+                    shadow-camera-far={12000}
                     shadow-mapSize-width={1024}
                     shadow-mapSize-height={1024}
                     castShadow
