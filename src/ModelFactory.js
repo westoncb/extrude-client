@@ -1,5 +1,6 @@
 import { MD2CharacterComplex } from 'three/examples/jsm/misc/MD2CharacterComplex.js';
 
+const WEAPONS_ENABLED = true
 const MD2_SCALE = 4
 const MD2_CONTROLS = {
     moveForward: false,
@@ -14,7 +15,7 @@ const MD2_CONTROLS = {
 class ModelFactory {
     static base
     static skinCount
-    static instanceIndex = 1
+    static instanceIndex = 2
 
     static init() {
         
@@ -50,7 +51,6 @@ class ModelFactory {
         this.basePromise = new Promise((resolve, reject) => {
             this.base.onLoadComplete = () => {
                 this.base.enableShadows(true)
-                this.base.setWeapon(0);
                 this.base.setSkin(2);
                 resolve(this.base)
             }
@@ -58,7 +58,9 @@ class ModelFactory {
         this.base.loadParts(configOgro);
     }
 
-    static async getModelInstance(skin = this.instanceIndex+=2 % this.skinCount) {
+    static async getModelInstance(skin = this.instanceIndex) {
+        this.instanceIndex = (this.instanceIndex + 1) % this.skinCount
+
         const instance = new MD2CharacterComplex()
         instance.scale = MD2_SCALE
         instance.controls = this.getControlsCopy()
@@ -67,8 +69,10 @@ class ModelFactory {
         return await this.basePromise.then(base => {
             instance.shareParts(base)
             instance.enableShadows(true);
-            instance.setWeapon(0)
             instance.setSkin(skin)
+
+            if (WEAPONS_ENABLED)
+                instance.setWeapon(0)
 
             return instance
         })
