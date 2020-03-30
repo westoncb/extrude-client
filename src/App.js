@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import MainCanvas from './MainCanvas'
 import LoginPrompt from './components/LoginPrompt'
+import Overlay from './components/Overlay'
 import Player from './Player'
 import './App.css';
 
@@ -17,19 +18,15 @@ function App() {
 
   useEffect(() => {
       if (QUICK_START)
-          doLogin(Player.generatePlayer())
+          doLogin(Player.create())
   }, [])
 
   return (
     <div className="App bp3-dark">
 
         {player &&
-          <MainCanvas player={player} />
+          <MainCanvas player={player}/>
         }
-
-        <div className="chat-window">
-          
-        </div>
 
         <div className="screen-container">
               {!loggedIn &&

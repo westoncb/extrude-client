@@ -1,5 +1,6 @@
 import io from "socket.io-client"
 import PGRenderer from './PGRenderer'
+import Player from './Player'
 
 const isProduction = process.env.NODE_ENV !== 'development'
 const port = 3000
@@ -39,7 +40,6 @@ class Playground {
             case "player_enter":
                 console.log("player_enter: ", event.player)
                 this.state.players[event.player.id] = event.player
-
                 this.setPlayers(this.getPlayersArray())
                 break;
             case "player_exit":
@@ -64,6 +64,15 @@ class Playground {
                 break;
             case "input_click":
 
+                break;
+            case "player_message":
+
+                const player = this.state.players[event.playerId]
+                this.state.players[event.playerId] = Player.addMessage(player, event.message)
+
+                setTimeout(() => {
+                    this.state.players[event.playerId] = Player.removeOldestMessage(player)
+                }, 3000)
                 break;
             default:
                 console.log("unrecognized server event: ", event)

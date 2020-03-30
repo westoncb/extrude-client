@@ -58,6 +58,24 @@ class Util {
     static rand(min, max) {
         return Math.random() * (max - min) + min
     }
+
+    static vec3ToScreenPoint(vector, camera, canvasWidth, canvasHeight) {
+        // Make a copy since .project(...) will transform the vector
+        const vectorCopy = vector.clone();
+
+        const widthHalf = 0.5 * canvasWidth;
+        const heightHalf = 0.5 * canvasHeight;
+
+        vectorCopy.project(camera);
+
+        vectorCopy.x = vectorCopy.x * widthHalf + widthHalf;
+        vectorCopy.y = -(vectorCopy.y * heightHalf) + heightHalf;
+
+        return {
+            x: vectorCopy.x,
+            y: vectorCopy.y,
+        };
+    }
 }
 
 export default Util

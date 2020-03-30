@@ -58,7 +58,7 @@ class ModelFactory {
         this.base.loadParts(configOgro);
     }
 
-    static async getInstance(skin = this.instanceIndex+=2 % this.skinCount) {
+    static async getModelInstance(skin = this.instanceIndex+=2 % this.skinCount) {
         const instance = new MD2CharacterComplex()
         instance.scale = MD2_SCALE
         instance.controls = this.getControlsCopy()
