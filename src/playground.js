@@ -46,10 +46,17 @@ class Playground {
             this.socket.emit("event", { type: "player_enter_request", player })
         })
 
-        this.sendMouseMove = throttle(() => this.socket.emit("event", { type: "input_mouse_move", playerId: this.localPlayerId }), 500)
+        this.sendMouseMove = throttle(() => this.socket.emit("event", { type: "player_target_change", playerId: this.localPlayerId, target: this.getLocalPlayer().target }), 500)
     }
 
     handleServerEvent(event) {
+        if (event.playerId && !this.state.players[event.playerId])
+            return
+    
+        let player
+        if (event.playerId)
+            player = this.state.players[event.playerId]
+
         switch (event.type) {
             case "player_enter":
                 console.log("player_enter: ", event.player)
@@ -82,11 +89,6 @@ class Playground {
 
                 break;
             case "chat_message":
-
-                if (!this.state.players[event.playerId])
-                    break;
-
-                const player = this.state.players[event.playerId]
                 const message = {...event, player}
                 const messageDisplayTime = 5000 + (1000 * Math.floor(message.message.length / 100))
                 this.state.players = { ...this.state.players, [event.playerId]: Player.addMessage(player, message)}
@@ -98,6 +100,10 @@ class Playground {
 
                 this.messages = this.messages.concat(message)
                 this.updateMessagesFunc(this.messages)
+                this.updatePlayers(Object.values(this.state.players))
+                break;
+            case "player_target_change":
+                this.state.players = { ...this.state.players, [event.playerId]: {...player, target: event.target} }
                 this.updatePlayers(Object.values(this.state.players))
                 break;
             default:
