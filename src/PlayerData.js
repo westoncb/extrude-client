@@ -1,16 +1,19 @@
 import  {Vector3} from "three"
 import Util from './Util'
 
+const player_skin_count = 13
+
 class Player {
 
-    static create(name = Util.randString(5)) {
+    static create(name = Util.randString(Util.rand(3, 12))) {
         return  {
                     name,
                     id: ""+Math.round(Math.random() * 10000), //Important this is a string!
                     position: new Vector3(Util.rand(-250, 250), 0, Util.rand(-250, 250)),
                     visibleMessages: [],
                     keyStates: {},
-                    target: new Vector3()
+                    target: new Vector3(),
+                    skindex: (name.length * 5003) % player_skin_count
                 }
     }
 

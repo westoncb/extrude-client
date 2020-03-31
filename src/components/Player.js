@@ -12,10 +12,11 @@ import './Player.css'
 function Player({ player, messages }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
+    const [position, setPosition] = useState(new THREE.Vector3())
     // const [tick, setTick] = useState(0)
 
     useEffect(() => {
-        ModelFactory.getModelInstance().then(instance => {
+        ModelFactory.getModelInstance(player.skindex).then(instance => {
             const bbox = Util.computeCompositeBoundingBox(instance.root)
 
             setHeight(bbox.getSize().y)
@@ -63,7 +64,7 @@ function Player({ player, messages }) {
                         </mesh> */}
                     </primitive>
 
-                    <Dom center position={[player.position.x, player.position.y, player.position.z]}>
+                    <Dom center position={[position.x, position.y, position.z]}>
                         <div className="scene-label">{player.name}</div>
                     </Dom>
 
