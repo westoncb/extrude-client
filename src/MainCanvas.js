@@ -14,7 +14,10 @@ import { Vector3, MathUtils } from 'three'
 // extend({ EffectComposer, RenderPass, SSAOPass })
 
 const stats = new Stats()
-const camDest = new Vector3()
+const camDest = new Vector3(0, 100, 100)
+const camLookAtDest = new Vector3(0, 0, 0)
+const curLookAtVect = new Vector3()
+const lastLookAtVec = new Vector3()
 
 let camZoom = 1
 
@@ -25,22 +28,28 @@ const CameraController = ({playground, setChatVisible, chatVisible}) => {
         stats.update()
         const positionObj = playground.getLocalPlayer().position
         const targetObj = playground.getLocalPlayer().target
-        const position = new Vector3(positionObj.x, positionObj.y + 70, positionObj.z)
+        const position = new Vector3(positionObj.x, positionObj.y, positionObj.z)
+        const shiftedPosition = position.set(position.x, position.y + 70, position.z)
         const target = new Vector3(targetObj.x, targetObj.y, targetObj.z)
 
-        const toTarget = target.sub(position).normalize()
+        const toTarget = target.clone().sub(shiftedPosition).normalize()
         const extension = toTarget.clone().multiplyScalar(-200 * camZoom)
-        extension.z = Math.max(Math.abs(extension.z), 100) * Math.sign(extension.z)
-        extension.y = Math.max(extension.y, 100)
+        extension.z = Math.max(Math.abs(extension.z), 50) * Math.sign(extension.z)
+        extension.y = Math.max(extension.y, 50)
 
         camDest.copy(position.clone().add(extension))
 
+        camLookAtDest.copy(position)
+
 
         const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
-        camera.position.copy(camera.position.lerp(camDest, 0.0025 * scale))
+        camera.position.copy(camera.position.lerp(camDest, 0.005 * scale))
         
-        camera.lookAt(position)
+        const newLookAt = lastLookAtVec.lerp(camLookAtDest, 0.05).clone()
+        camera.lookAt(newLookAt)
         camera.updateProjectionMatrix()
+
+        lastLookAtVec.copy(newLookAt)
     })
 
     // should be in a different component...
