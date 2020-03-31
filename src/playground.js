@@ -1,5 +1,5 @@
 import io from "socket.io-client"
-import Player from './Player'
+import Player from './PlayerData'
 import {throttle} from 'lodash-es'
 
 const isProduction = process.env.NODE_ENV !== 'development'
@@ -30,7 +30,7 @@ class Playground {
         this.socket.emit("event", { type: "player_enter_request", player })
 
         this.socket.on("event", data => {
-            console.log("server event: ", data)
+            // console.log("server event: ", data)
 
             this.handleServerEvent(data)
         })
