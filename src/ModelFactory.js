@@ -9,6 +9,8 @@ const MD2_CONTROLS = {
     moveBackward: false,
     moveLeft: false,
     moveRight: false,
+    moveUp: false,
+    moveDown: false,
     crouch: false,
     jump: false,
     attack: false
@@ -41,7 +43,7 @@ class ModelFactory {
                 crouchAttach: "crattack"
             },
 
-            walkSpeed: 800,
+            walkSpeed: 1000,
             crouchSpeed: 175
         }
 
@@ -65,8 +67,22 @@ class ModelFactory {
         // on MD2CharacterComplex
         const customUpdateMovementModel = self => {
             return delta => {
-                self.angularSpeed = 4
                 var controls = self.controls;
+                self.decceleration = 1500
+                self.maxSpeed = self.walkSpeed
+
+                if (!self.moveDirection)
+                    self.moveDirection = new Vector3()
+
+                const moveForward = controls.moveForward ? 1 : 0
+                const moveBackward = controls.moveBackward ? -1 : 0
+                const moveRight = controls.moveRight ? -1 : 0
+                const moveLeft = controls.moveLeft ? 1 : 0
+                const moveUp = controls.moveUp ? 1 : 0
+                const moveDown = controls.moveDown ? -1 : 0
+
+                self.impulseDirection = new Vector3(moveRight + moveLeft, moveUp + moveDown, moveForward + moveBackward)
+                self.impulseDirection.normalize()
 
                 // Rotate toward 'target' (where ray cast from cursor hits scene object)
                 const forwardVec = new Vector3(0, 0, 1).applyAxisAngle(new Vector3(0, 1, 0), self.bodyOrientation)
@@ -76,6 +92,12 @@ class ModelFactory {
                 const rotationGap = forwardVec.cross(toTarget).y
                 self.bodyOrientation += rotationGap * delta * 10
 
+                self.impulseDirection.applyAxisAngle(new Vector3(0, 1, 0), self.bodyOrientation)
+
+                if (self.impulseDirection.length() > 0) {
+                    self.moveDirection.copy(self.impulseDirection)
+                }
+
                 // Animate while turning
                 if (Math.abs(rotationGap) > 0.2) {
                     self.speed = rotationGap * delta * 10
@@ -83,47 +105,19 @@ class ModelFactory {
                         controls.moveLeft = true
                     else
                         controls.moveRight = true
-                } else {
-                    controls.moveLeft = false
-                    controls.moveRight = false
                 }
 
-                // speed based on controls
 
-                if (controls.crouch) self.maxSpeed = self.crouchSpeed;
-                else self.maxSpeed = self.walkSpeed;
-
-                self.maxReverseSpeed = - self.maxSpeed;
-
-                if (controls.moveForward) self.speed = self.maxSpeed//MathUtils.clamp(self.speed + delta * self.frontAcceleration, self.maxReverseSpeed, self.maxSpeed);
-                if (controls.moveBackward) self.speed = self.maxReverseSpeed//MathUtils.clamp(self.speed - delta * self.backAcceleration, self.maxReverseSpeed, self.maxSpeed);
-
-                // speed decay
-
-                if (!(controls.moveForward || controls.moveBackward)) {
-
-                    if (self.speed > 0) {
-
-                        const k = Util.exponentialEaseOut(self.speed / self.maxSpeed);
-                        self.speed = MathUtils.clamp(self.speed - k * delta * self.frontDecceleration, 0, self.maxSpeed);
-
-                    } else {
-
-                        const k = Util.exponentialEaseOut(self.speed / self.maxReverseSpeed);
-                        self.speed = MathUtils.clamp(self.speed + k * delta * self.backAcceleration, self.maxReverseSpeed, 0);
-
-                    }
-
+                if (self.impulseDirection.length() > 0) {
+                    self.speed = self.maxSpeed // We don't bother accelerating--jump to max speed
+                } else {
+                    const k = Util.exponentialEaseOut(self.speed / self.maxSpeed);
+                    self.speed = MathUtils.clamp(self.speed - k * delta * self.decceleration, 0, self.maxSpeed);
                 }
 
                 // displacement
-
-                const forwardDelta = self.speed * delta / 10;
-
-                self.root.position.x += Math.sin(self.bodyOrientation) * forwardDelta;
-                self.root.position.z += Math.cos(self.bodyOrientation) * forwardDelta;
-
-                // steering
+                const deltaVec = self.moveDirection.clone().multiplyScalar(self.speed * delta / 10)
+                self.root.position.add(deltaVec)
 
                 self.root.rotation.y = self.bodyOrientation;
             }
