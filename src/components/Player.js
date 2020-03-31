@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
-import { useFrame, useUpdate, Dom } from 'react-three-fiber'
+import { useFrame, Dom } from 'react-three-fiber'
 import ModelFactory from '../ModelFactory'
 import Util from '../Util'
-import './PlayerView.css'
+import './Player.css'
 
 // let imageCapture
 // let texture
