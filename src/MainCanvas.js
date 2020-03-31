@@ -18,7 +18,7 @@ const camDest = new Vector3()
 
 let camZoom = 1
 
-const CameraController = ({playground}) => {
+const CameraController = ({playground, setChatVisible, chatVisible}) => {
     const { camera, gl } = useThree();
 
     useFrame(() => {
@@ -34,7 +34,6 @@ const CameraController = ({playground}) => {
         camDest.y = Math.max(camDest.y, 100)
 
         const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
-        console.log("scale", scale)
         camera.position.copy(camera.position.lerp(camDest, 0.0025 * scale))
         
         camera.lookAt(position)
@@ -43,18 +42,27 @@ const CameraController = ({playground}) => {
 
     // should be in a different component...
     useEffect(() => {
-        gl.domElement.tabIndex = "0"
-        gl.domElement.focus()
-
         gl.domElement.onclick = e => {
             if (playground)
                 playground.localClick(e)
         }
-        gl.domElement.onkeydown = e => {
+        window.onkeydown = e => {
+
+            if (e.key === 't') {
+                if (!chatVisible) {
+                    e.preventDefault()
+                }
+
+                setChatVisible(true)
+            } else if (e.which === 27) { //escape key
+                setChatVisible(!chatVisible)
+            }
+                
+
             if (playground)
                 playground.localKeyDown(e)
         }
-        gl.domElement.onkeyup = e => {
+        window.onkeyup = e => {
             if (playground)
                 playground.localKeyUp(e)
         }
@@ -68,7 +76,7 @@ const CameraController = ({playground}) => {
             camZoom += event.deltaY * 0.01;
             camZoom = Math.min(Math.max(.05, camZoom), 3);
         }
-    }, [gl, playground])
+    }, [gl, playground, chatVisible])
 
     return null;
 }
@@ -90,6 +98,7 @@ function MainCanvas({player}) {
     const [players, setPlayers] = useState([])
     const [messages, setMessages] = useState([])
     const [playground, setPlayground] = useState(null)
+    const [chatVisible, setChatVisible] = useState(false)
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("grasslight-big.jpg"), [])
 
     useEffect(() => {
@@ -111,7 +120,7 @@ function MainCanvas({player}) {
                 }}
             >
                 {/* <Effects /> */}
-                <CameraController playground={playground} />
+                <CameraController playground={playground} setChatVisible={setChatVisible} chatVisible={chatVisible} />
                 <fog attach="fog" args={[0x778899, 1000, 4000]} />
                 <ambientLight args={[0x666666]} />
                 <directionalLight
@@ -142,8 +151,8 @@ function MainCanvas({player}) {
                     </meshLambertMaterial>
                 </mesh>
             </Canvas>
-            {playground && 
-                <ChatWindow sendChatMessage={playground.sendChatMessage.bind(playground)} messages={messages} />
+            {playground && chatVisible &&
+                <ChatWindow sendChatMessage={playground.sendChatMessage.bind(playground)} messages={messages} hideChat={() => setChatVisible(false)}/>
             }
         </div>
     )

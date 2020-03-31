@@ -2,13 +2,15 @@ import React, {useState} from 'react'
 import './ChatWindow.css'
 import {InputGroup} from '@blueprintjs/core'
 
-function ChatWindow({sendChatMessage, messages}) {
+function ChatWindow({sendChatMessage, messages, hideChat}) {
     const [inputText, setInputText] = useState("")
 
-    const sendMessage = e => {
+    const handleKeyDown = e => {
         if (e.which === 13) { //check for 'enter' press
             sendChatMessage(inputText)
             setInputText("")
+        } else if (e.which === 27) { //escape key
+            hideChat()
         }
     }
 
@@ -26,9 +28,10 @@ function ChatWindow({sendChatMessage, messages}) {
                 className="your-message"
                 placeholder="your message..."
                 large
-                onKeyDown={sendMessage}
+                onKeyDown={handleKeyDown}
                 value={inputText}
                 onChange={event => setInputText(event.target.value)}
+                autoFocus
             />
         </div>
     )

@@ -68,7 +68,7 @@ function Player({ player, messages }) {
                     </Dom>
 
                     {messages.map((message, i) => (
-                        <Dom key={message.time} center position={[player.position.x, player.position.y + height, player.position.z]}>
+                        <Dom key={message.time} center position={[player.position.x, player.position.y + height/1.5, player.position.z]}>
                             <div style={{transform: `translateY(${-i*2.1}rem)`}} className="speech-bubble">{message.message}</div>
                         </Dom>
                     ))}
