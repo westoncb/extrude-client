@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import './LoginPrompt.css'
 import {FormGroup, InputGroup, Button} from '@blueprintjs/core'
-import Player from '../Player'
+import Player from '../PlayerData'
 
 function LoginPrompt({logIn}) {
     const [name, setName] = useState("")

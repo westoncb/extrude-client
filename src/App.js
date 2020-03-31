@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import MainCanvas from './MainCanvas'
 import LoginPrompt from './components/LoginPrompt'
-import Player from './Player'
+import Player from './PlayerData'
 import './App.css';
 
 const QUICK_START = false
