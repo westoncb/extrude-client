@@ -9,7 +9,7 @@ import './Player.css'
 // let texture
 // let outerTick = 0
 
-function PlayerView({ player, messages }) {
+function Player({ player, messages }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
     // const [tick, setTick] = useState(0)
@@ -137,4 +137,4 @@ function PlayerView({ player, messages }) {
 //     return texture
 // }
 
-export default PlayerView
+export default Player

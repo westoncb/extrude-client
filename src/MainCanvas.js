@@ -4,7 +4,7 @@ import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Canvas, extend, useThree, useFrame } from 'react-three-fiber'
 import Playground from './playground'
-import PlayerView from './components/Player'
+import Player from './components/Player'
 import ChatWindow from './components/ChatWindow'
 // import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 // import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
@@ -121,7 +121,7 @@ function MainCanvas({player}) {
                     castShadow
                 />
 
-                {players.map(player => <PlayerView key={player.id} player={player} messages={player.visibleMessages} />)}
+                {players.map(player => <Player key={player.id} player={player} messages={player.visibleMessages} />)}
 
                 <mesh receiveShadow 
                     rotation-x={- Math.PI / 2} 
