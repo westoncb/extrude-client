@@ -29,9 +29,12 @@ const CameraController = ({playground, setChatVisible, chatVisible}) => {
         const target = new Vector3(targetObj.x, targetObj.y, targetObj.z)
 
         const toTarget = target.sub(position).normalize()
+        const extension = toTarget.clone().multiplyScalar(-200 * camZoom)
+        extension.z = Math.max(Math.abs(extension.z), 100) * Math.sign(extension.z)
+        extension.y = Math.max(extension.y, 100)
 
-        camDest.copy(position.clone().add(toTarget.multiplyScalar(-200 * camZoom)))
-        camDest.y = Math.max(camDest.y, 100)
+        camDest.copy(position.clone().add(extension))
+
 
         const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
         camera.position.copy(camera.position.lerp(camDest, 0.0025 * scale))
