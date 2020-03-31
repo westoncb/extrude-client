@@ -7,6 +7,8 @@ const port = 3000
 const devURL = "localhost:" + port
 const prodURL = "https://nameless-depths-23573.herokuapp.com"
 const serverURL = isProduction ? prodURL : devURL
+const PERIODIC_SYNC_TIME = 2000
+const TARGET_UPDATE_THROTTLE = 1000
 
 class Playground {
     localPlayerId
@@ -46,7 +48,11 @@ class Playground {
             this.socket.emit("event", { type: "player_enter_request", player })
         })
 
-        this.sendMouseMove = throttle(() => this.socket.emit("event", { type: "player_target_change", playerId: this.localPlayerId, target: this.getLocalPlayer().target }), 500)
+        this.sendMouseMove = throttle(() => this.socket.emit("event", { type: "player_target_change", playerId: this.localPlayerId, target: this.getLocalPlayer().target }), TARGET_UPDATE_THROTTLE)
+
+        this.periodicSyncInterval = setInterval(() => {
+            this.socket.emit("event", { type: "player_sync", player: this.getLocalPlayer() })
+        }, PERIODIC_SYNC_TIME)
     }
 
     handleServerEvent(event) {
@@ -62,6 +68,7 @@ class Playground {
                 this.updatePlayers(this.getPlayersArray())
                 break;
             case "player_exit":
+                console.log("player_exit: ", event.player)
                 if (this.state.players[event.player.id] && event.player.id !== this.localPlayerId) {
                     delete this.state.players[event.player.id]
                     this.updatePlayers(this.getPlayersArray())
@@ -110,6 +117,13 @@ class Playground {
                 }
 
                 this.state.players = { ...this.state.players, [event.playerId]: {...player, target: event.target} }
+                this.updatePlayers(Object.values(this.state.players))
+                break;
+            case "player_sync":
+                if (event.player.id === this.localPlayerId)
+                    break
+                    
+                this.state.players[event.player.id] = event.player
                 this.updatePlayers(Object.values(this.state.players))
                 break;
             default:
