@@ -50,9 +50,7 @@ class Playground {
     }
 
     handleServerEvent(event) {
-        if (event.playerId && !this.state.players[event.playerId])
-            return
-    
+        
         let player
         if (event.playerId)
             player = this.state.players[event.playerId]
@@ -64,7 +62,7 @@ class Playground {
                 this.updatePlayers(this.getPlayersArray())
                 break;
             case "player_exit":
-                if (this.state.players[event.player.id]) {
+                if (this.state.players[event.player.id] && event.player.id !== this.localPlayerId) {
                     delete this.state.players[event.player.id]
                     this.updatePlayers(this.getPlayersArray())
                 }
@@ -89,6 +87,10 @@ class Playground {
 
                 break;
             case "chat_message":
+                if ((event.playerId && !this.state.players[event.playerId])) {
+                    break
+                }
+
                 const message = {...event, player}
                 const messageDisplayTime = 5000 + (1000 * Math.floor(message.message.length / 100))
                 this.state.players = { ...this.state.players, [event.playerId]: Player.addMessage(player, message)}
@@ -103,6 +105,10 @@ class Playground {
                 this.updatePlayers(Object.values(this.state.players))
                 break;
             case "player_target_change":
+                if ((event.playerId && !this.state.players[event.playerId])) {
+                    break
+                }
+
                 this.state.players = { ...this.state.players, [event.playerId]: {...player, target: event.target} }
                 this.updatePlayers(Object.values(this.state.players))
                 break;

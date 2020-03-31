@@ -12,7 +12,6 @@ import './Player.css'
 function Player({ player, messages }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
-    const [position, setPosition] = useState(new THREE.Vector3())
     // const [tick, setTick] = useState(0)
 
     useEffect(() => {
@@ -64,7 +63,7 @@ function Player({ player, messages }) {
                         </mesh> */}
                     </primitive>
 
-                    <Dom center position={[position.x, position.y, position.z]}>
+                    <Dom center position={[player.position.x, player.position.y, player.position.z]}>
                         <div className="scene-label">{player.name}</div>
                     </Dom>
 

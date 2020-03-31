@@ -43,7 +43,8 @@ const CameraController = ({playground}) => {
 
     // should be in a different component...
     useEffect(() => {
-        gl.domElement.tabIndex = 0
+        gl.domElement.tabIndex = "0"
+        gl.domElement.focus()
 
         gl.domElement.onclick = e => {
             if (playground)
