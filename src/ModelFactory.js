@@ -75,6 +75,18 @@ class ModelFactory {
                 const rotationGap = forwardVec.cross(toTarget).y
                 self.bodyOrientation += rotationGap * delta * 10
 
+                // This causes it to actually animate while turning
+                if (Math.abs(rotationGap) > 0.2) {
+                    self.speed = rotationGap * delta * 10
+                    if (rotationGap < 0)
+                        controls.moveLeft = true
+                    else
+                        controls.moveRight = true
+                } else {
+                    controls.moveLeft = false
+                    controls.moveRight = false
+                }
+
                 // speed based on controls
 
                 if (controls.crouch) self.maxSpeed = self.crouchSpeed;
@@ -84,25 +96,6 @@ class ModelFactory {
 
                 if (controls.moveForward) self.speed = self.maxSpeed//MathUtils.clamp(self.speed + delta * self.frontAcceleration, self.maxReverseSpeed, self.maxSpeed);
                 if (controls.moveBackward) self.speed = self.maxReverseSpeed//MathUtils.clamp(self.speed - delta * self.backAcceleration, self.maxReverseSpeed, self.maxSpeed);
-
-                // orientation based on controls
-                // (don't just stand while turning)
-
-                var dir = 1;
-
-                if (controls.moveLeft) {
-
-                    self.bodyOrientation += delta * self.angularSpeed;
-                    self.speed = MathUtils.clamp(self.speed + dir * delta * self.frontAcceleration, self.maxReverseSpeed, self.maxSpeed);
-
-                }
-
-                if (controls.moveRight) {
-
-                    self.bodyOrientation -= delta * self.angularSpeed;
-                    self.speed = MathUtils.clamp(self.speed + dir * delta * self.frontAcceleration, self.maxReverseSpeed, self.maxSpeed);
-
-                }
 
                 // speed decay
 
