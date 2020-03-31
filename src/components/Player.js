@@ -44,7 +44,7 @@ function PlayerView({ player, messages }) {
             md2.controls.jump = player.keyStates[' ']
             md2.controls.attack = player.keyStates['f']
             md2.target = player.target
-            md2.update(.016)
+            md2.update(.020)
             player.position.x = md2.root.position.x
             player.position.z = md2.root.position.z
         }
@@ -68,7 +68,7 @@ function PlayerView({ player, messages }) {
                     </Dom>
 
                     {messages.map((message, i) => (
-                        <Dom key={message.time} center position={[player.position.x, player.position.y + height*1.25, player.position.z]}>
+                        <Dom key={message.time} center position={[player.position.x, player.position.y + height, player.position.z]}>
                             <div style={{transform: `translateY(${-i*2.1}rem)`}} className="speech-bubble">{message.message}</div>
                         </Dom>
                     ))}

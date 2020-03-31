@@ -3,7 +3,7 @@ import { MathUtils, Vector3 } from 'three'
 import Util from './Util'
 
 const WEAPONS_ENABLED = true
-const MD2_SCALE = 4
+const MD2_SCALE = 1
 const MD2_CONTROLS = {
     moveForward: false,
     moveBackward: false,
@@ -41,7 +41,7 @@ class ModelFactory {
                 crouchAttach: "crattack"
             },
 
-            walkSpeed: 750,
+            walkSpeed: 800,
             crouchSpeed: 175
         }
 
@@ -70,7 +70,9 @@ class ModelFactory {
 
                 const forwardVec = new Vector3(0, 0, 1).applyAxisAngle(new Vector3(0, 1, 0), self.bodyOrientation)
                 const target = new Vector3(self.target.x, self.target.y, self.target.z)
-                const toTarget = target.clone().sub(self.root.position).normalize()
+                const toTarget = target.clone().sub(self.root.position)
+                self.laserVec = toTarget.clone()
+                toTarget.normalize()
                 toTarget.y = 0
                 const rotationGap = forwardVec.cross(toTarget).y
                 self.bodyOrientation += rotationGap * delta * 10
@@ -117,7 +119,7 @@ class ModelFactory {
 
                 // displacement
 
-                const forwardDelta = self.speed * delta;
+                const forwardDelta = self.speed * delta / 10;
 
                 self.root.position.x += Math.sin(self.bodyOrientation) * forwardDelta;
                 self.root.position.z += Math.cos(self.bodyOrientation) * forwardDelta;

@@ -1,4 +1,4 @@
-import React, {useMemo, useEffect, useState} from 'react'
+import React, {useMemo, useEffect, useState, useRef} from 'react'
 import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
@@ -10,6 +10,7 @@ import ChatWindow from './components/ChatWindow'
 // import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
 import './MainCanvas.css'
+import { Vector3 } from 'three'
 
 // extend({ EffectComposer, RenderPass, SSAOPass })
 extend({ OrbitControls })
@@ -18,21 +19,32 @@ const stats = new Stats()
 
 const CameraController = ({playground}) => {
     const { camera, gl } = useThree();
-    useFrame(() => stats.update())
-    useEffect(
-        () => {
-            gl.domElement.appendChild(stats.dom)
-            const controls = new OrbitControls(camera, gl.domElement);
-            controls.target.set(0, 50, 0)
-            return () => {
-                controls.dispose();
-            };
-        },
-        [camera, gl]
-    )
+
+    useFrame(() => {
+        stats.update()
+        const playerPos = playground.getLocalPlayer().position
+        const target = new Vector3(playerPos.x, playerPos.y, playerPos.z)
+        camera.position.copy(target).add(new Vector3(0, 110, 160));
+        
+        camera.lookAt(target)
+        camera.updateProjectionMatrix()
+    })
+    // useEffect(
+    //     () => {
+    //         gl.domElement.appendChild(stats.dom)
+    //         // const controls = new OrbitControls(camera, gl.domElement);
+    //         // controls.target.set(0, 50, 0)
+    //         // return () => {
+    //         //     controls.dispose();
+    //         // };
+    //     },
+    //     [camera, gl]
+    // )
 
     // should be in a different component...
     useEffect(() => {
+        gl.domElement.tabIndex = 0
+
         gl.domElement.onclick = e => {
             if (playground)
                 playground.localClick(e)
@@ -83,7 +95,7 @@ function MainCanvas({player}) {
                 style={{ backgroundColor: "#789" }}
                 gl={{ antialias: false, alpha: true }}
                 pixelRatio={window.devicePixelRatio}
-                camera={{ position: [0, 150, 1300], near: 1, far: 4000 }}
+                camera={{ position: [0, 10, 10], near: 1, far: 4000 }}
                 shadowMap
                 onCreated={({ gl }) => {
                     gl.toneMapping = THREE.ReinhardToneMapping
@@ -94,10 +106,10 @@ function MainCanvas({player}) {
                 {/* <Effects /> */}
                 <CameraController playground={playground} />
                 <fog attach="fog" args={[0x778899, 1000, 4000]} />
-                <ambientLight args={[0x888888]} />
+                <ambientLight args={[0x666666]} />
                 <directionalLight
-                    args={[0xffffff, 8]}
-                    position={[250, 4500, 500]}
+                    args={[0xffffff, 7]}
+                    position={[0, 6000, 3000]}
                     shadow-camera-left={-1000}
                     shadow-camera-bottom={-1000}
                     shadow-camera-right={1000}
@@ -118,7 +130,7 @@ function MainCanvas({player}) {
                     )}
                 >
                     <planeBufferGeometry attach="geometry" args={[16000, 16000]} />
-                    <meshLambertMaterial attach="material" color={0x445566}>
+                    <meshLambertMaterial attach="material">
                         <primitive attach="map" object={grassTexture} repeat={[64, 64]} wrapS={THREE.RepeatWrapping} wrapT={THREE.RepeatWrapping} encoding={THREE.sRGBEncoding} />
                     </meshLambertMaterial>
                 </mesh>
