@@ -9,6 +9,8 @@ import './Player.css'
 // let texture
 // let outerTick = 0
 
+const PLAYER_SPEED_SCALE = 1.75
+
 function Player({ player, messages }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
@@ -35,7 +37,7 @@ function Player({ player, messages }) {
     //     return getVideoTexture()
     // }, [tick])
 
-    useFrame(info => {
+    useFrame((info, delta) => {
         if (md2) {
             md2.controls.moveForward = player.keyStates['w']
             md2.controls.moveBackward = player.keyStates['s']
@@ -44,7 +46,7 @@ function Player({ player, messages }) {
             md2.controls.jump = player.keyStates[' ']
             md2.controls.attack = player.keyStates['f']
             md2.target = player.target
-            md2.update(.020)
+            md2.update(delta * PLAYER_SPEED_SCALE)
             player.position.x = md2.root.position.x
             player.position.z = md2.root.position.z
         }
