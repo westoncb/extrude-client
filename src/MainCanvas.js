@@ -1,7 +1,6 @@
 import React, {useMemo, useEffect, useState, useRef} from 'react'
 import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Canvas, extend, useThree, useFrame } from 'react-three-fiber'
 import Playground from './playground'
 import Player from './components/Player'
@@ -10,36 +9,37 @@ import ChatWindow from './components/ChatWindow'
 // import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 // import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
 import './MainCanvas.css'
-import { Vector3 } from 'three'
+import { Vector3, MathUtils } from 'three'
 
 // extend({ EffectComposer, RenderPass, SSAOPass })
-extend({ OrbitControls })
 
 const stats = new Stats()
+const camDest = new Vector3()
+
+let camZoom = 1
 
 const CameraController = ({playground}) => {
     const { camera, gl } = useThree();
 
     useFrame(() => {
         stats.update()
-        const playerPos = playground.getLocalPlayer().position
-        const target = new Vector3(playerPos.x, playerPos.y, playerPos.z)
-        camera.position.copy(target).add(new Vector3(0, 110, 160));
+        const positionObj = playground.getLocalPlayer().position
+        const targetObj = playground.getLocalPlayer().target
+        const position = new Vector3(positionObj.x, positionObj.y + 70, positionObj.z)
+        const target = new Vector3(targetObj.x, targetObj.y, targetObj.z)
+
+        const toTarget = target.sub(position).normalize()
+
+        camDest.copy(position.clone().add(toTarget.multiplyScalar(-200 * camZoom)))
+        camDest.y = Math.max(camDest.y, 100)
+
+        const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
+        console.log("scale", scale)
+        camera.position.copy(camera.position.lerp(camDest, 0.0025 * scale))
         
-        camera.lookAt(target)
+        camera.lookAt(position)
         camera.updateProjectionMatrix()
     })
-    // useEffect(
-    //     () => {
-    //         gl.domElement.appendChild(stats.dom)
-    //         // const controls = new OrbitControls(camera, gl.domElement);
-    //         // controls.target.set(0, 50, 0)
-    //         // return () => {
-    //         //     controls.dispose();
-    //         // };
-    //     },
-    //     [camera, gl]
-    // )
 
     // should be in a different component...
     useEffect(() => {
@@ -61,6 +61,12 @@ const CameraController = ({playground}) => {
         gl.domElement.onmousemove = e => {
             if (playground)
                 playground.localMouseMove(e)
+        }
+
+        gl.domElement.onwheel = event => {
+            event.preventDefault();
+            camZoom += event.deltaY * 0.01;
+            camZoom = Math.min(Math.max(.05, camZoom), 3);
         }
     }, [gl, playground])
 
