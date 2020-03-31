@@ -1,4 +1,4 @@
-import React, {useMemo, useEffect, useState, useRef} from 'react'
+import React, {useMemo, useEffect, useState} from 'react'
 import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
@@ -111,7 +111,12 @@ function MainCanvas({player}) {
 
                 {players.map(player => <PlayerView key={player.id} player={player} messages={player.visibleMessages} />)}
 
-                <mesh receiveShadow rotation-x={- Math.PI / 2}>
+                <mesh receiveShadow 
+                    rotation-x={- Math.PI / 2} 
+                    onPointerMove={e => (
+                        playground.getLocalPlayer().target = e.point
+                    )}
+                >
                     <planeBufferGeometry attach="geometry" args={[16000, 16000]} />
                     <meshLambertMaterial attach="material" color={0x445566}>
                         <primitive attach="map" object={grassTexture} repeat={[64, 64]} wrapS={THREE.RepeatWrapping} wrapT={THREE.RepeatWrapping} encoding={THREE.sRGBEncoding} />

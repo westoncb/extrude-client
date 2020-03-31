@@ -1,5 +1,5 @@
 import { MD2CharacterComplex } from 'three/examples/jsm/misc/MD2CharacterComplex.js';
-import { MathUtils } from 'three'
+import { MathUtils, Vector3 } from 'three'
 import Util from './Util'
 
 const WEAPONS_ENABLED = true
@@ -41,7 +41,7 @@ class ModelFactory {
                 crouchAttach: "crattack"
             },
 
-            walkSpeed: 500,
+            walkSpeed: 750,
             crouchSpeed: 175
         }
 
@@ -67,6 +67,13 @@ class ModelFactory {
             return delta => {
                 self.angularSpeed = 4
                 var controls = self.controls;
+
+                const forwardVec = new Vector3(0, 0, 1).applyAxisAngle(new Vector3(0, 1, 0), self.bodyOrientation)
+                const target = new Vector3(self.target.x, self.target.y, self.target.z)
+                const toTarget = target.clone().sub(self.root.position).normalize()
+                toTarget.y = 0
+                const rotationGap = forwardVec.cross(toTarget).y
+                self.bodyOrientation += rotationGap * delta * 10
 
                 // speed based on controls
 
@@ -144,6 +151,7 @@ class ModelFactory {
             instance.shareParts(base)
             instance.enableShadows(true);
             instance.setSkin(skin)
+            instance.target = new Vector3()
 
             if (WEAPONS_ENABLED)
                 instance.setWeapon(0)

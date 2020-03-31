@@ -14,13 +14,14 @@ class Playground {
     state = {players: {}}
     messages = []
 
-    static RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q"]
+    static RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q", " "]
     static KEY_TO_DIRECTION = { a: 'left', w: "up", s: "down", d: "right"}
 
     constructor(player, updatePlayers, updateMessagesFunc) {
         this.localPlayerId = player.id
         this.updatePlayers = updatePlayers
         this.updateMessagesFunc = updateMessagesFunc
+        this.state.players[player.id] = player
 
         this.connectToServer(player)
     }
@@ -69,7 +70,6 @@ class Playground {
                 this.updatePlayers(this.getPlayersArray())
                 break;
             case "input_key_down":
-                console.log("GOT SERVER KEY DOWN", event, "(playerId)", this.localPlayerId)
                 this.serverKeyDown(event)
                 break;
             case "input_key_up":
@@ -120,7 +120,6 @@ class Playground {
 
         const key = event.key
         this.state.players[event.playerId].keyStates[key] = true
-        console.log("just set that keystate down for: ", key)
     }
 
     serverKeyUp(event) {
@@ -167,6 +166,10 @@ class Playground {
 
     sendChatMessage(message) {
         this.socket.emit("event", {type: "chat_message", message, playerId: this.localPlayerId, time: new Date()})
+    }
+
+    getLocalPlayer() {
+        return this.state.players[this.localPlayerId]
     }
 }
 

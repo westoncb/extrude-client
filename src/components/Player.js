@@ -41,8 +41,9 @@ function PlayerView({ player, messages }) {
             md2.controls.moveBackward = player.keyStates['s']
             md2.controls.moveLeft = player.keyStates['a']
             md2.controls.moveRight = player.keyStates['d']
-            md2.controls.jump = player.keyStates['q']
+            md2.controls.jump = player.keyStates[' ']
             md2.controls.attack = player.keyStates['f']
+            md2.target = player.target
             md2.update(.016)
             player.position.x = md2.root.position.x
             player.position.z = md2.root.position.z
@@ -53,7 +54,7 @@ function PlayerView({ player, messages }) {
         <mesh>
             {md2 && 
                 <>
-                        <primitive object={md2.root} onClick={e => console.log('click')}>
+                    <primitive object={md2.root} onClick={e => console.log('click')}>
                         {/* <mesh position={[0, 200, -100]}>
                             <planeBufferGeometry attach="geometry" args={[250, 150]} />
                             <meshBasicMaterial attach="material" side={THREE.DoubleSide}>
