@@ -31,3 +31,13 @@ html {
   z-index: 2;
   pointer-events: none;
 }
+
+#test-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 250px;
+  height: 250px;
+  z-index: 1000;
+  background-color: royalblue;
+}

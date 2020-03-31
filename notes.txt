@@ -26,4 +26,5 @@ Snap lines:
 
 
 SSAOPass example: https://codesandbox.io/s/react-three-fiber-blob-qv9ww?from-embed
+Webcam image capture example: https://googlechrome.github.io/samples/image-capture/photo-resolution.html
 Heroku server repo: https://git.heroku.com/nameless-depths-23573.git

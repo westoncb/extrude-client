@@ -32,6 +32,10 @@ function App() {
                   <LoginPrompt logIn={doLogin} />
               }
         </div>
+      
+      {/* This is for webcam capture/display stuff */}
+      {/* <canvas id="test-canvas"></canvas>
+      <video id="video" style={{ visibility: "hidden"}}></video> */}
     </div>
   );
 }
