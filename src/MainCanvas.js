@@ -43,6 +43,8 @@ const CameraController = ({playground, setChatVisible, chatVisible}) => {
     // should be in a different component...
     useEffect(() => {
         gl.domElement.onclick = e => {
+            setChatVisible(false)
+
             if (playground)
                 playground.localClick(e)
         }
@@ -59,7 +61,7 @@ const CameraController = ({playground, setChatVisible, chatVisible}) => {
             }
                 
 
-            if (playground)
+            if (playground && !chatVisible)
                 playground.localKeyDown(e)
         }
         window.onkeyup = e => {

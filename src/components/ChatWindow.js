@@ -1,9 +1,10 @@
-import React, {useState} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import './ChatWindow.css'
 import {InputGroup} from '@blueprintjs/core'
 
 function ChatWindow({sendChatMessage, messages, hideChat}) {
     const [inputText, setInputText] = useState("")
+    const allMessagesRef = useRef()
 
     const handleKeyDown = e => {
         if (e.which === 13) { //check for 'enter' press
@@ -14,9 +15,13 @@ function ChatWindow({sendChatMessage, messages, hideChat}) {
         }
     }
 
+    useEffect(() => {
+        allMessagesRef.current.scrollTop = allMessagesRef.current.scrollHeight
+    }, [messages])
+
     return (
         <div className="ChatWindow">
-            <div className="all-messages">
+            <div className="all-messages" ref={allMessagesRef}>
                 {messages.map(message => (
                     <div className="chat-message" key={message.time}>
                         <div className="chat-message-name">{message.player.name}:</div>
