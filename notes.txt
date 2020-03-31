@@ -1,3 +1,24 @@
+TODO:
+    Strafing
+    Decal for projected pointer
+    Extrusion + snapping at 90degrees and vertices of existing objects
+    Character / structure collision and response
+    Material editor for created structures (possibly: change whole material when clicking face, but also allow vertex colors)
+    Day/Night cycle
+
+Might do all face/edge/vert modifications by establishing a 'link' with the player, and then just user player movement to adjust.
+
+If you allowed people to edit edges and vertices you could make ramps/other sloped surfaces. With those + N-Game like collision detection/movement, it could be a lot of fun just building things to run around on...
+
+Subdivisions coudl just be a material modifier, or something used for destructible objects: https://threejs.org/examples/#webgl_modifier_subdivision OR https://threejs.org/examples/#webgl_modifier_tessellation
+
+Would be cool to allow materials like: 
+ - https://threejs.org/examples/#webgl_materials_envmaps_exr
+ - https://threejs.org/examples/#webgl_materials_envmaps_hdr
+ - https://threejs.org/examples/#webgl_materials_physical_clearcoat (this one's easy I think)
+ - Definitely see: https://threejs.org/examples/#webgl_materials_translucency (fast subsurface scattering)
+ - Even just this may be enough though: https://threejs.org/examples/#webgl_materials_variations_physical
+
 To credit for DDZ/Ratamahatta: https://web.archive.org/web/20000303203827/http://www.planetquake.com:80/polycount/cottages/evilb/quake.htm (brian collins aka Brian “EvilBastard” Collins’)
 
 Movement should feel like super mario world
