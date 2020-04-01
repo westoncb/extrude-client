@@ -5,13 +5,14 @@ import { Canvas, extend, useThree, useFrame } from 'react-three-fiber'
 import Playground from './playground'
 import Player from './components/Player'
 import ChatWindow from './components/ChatWindow'
-// import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
-// import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
-// import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import './MainCanvas.css'
-import { Vector3, MathUtils } from 'three'
+import { Vector3, MathUtils, Vector2 } from 'three'
 
-// extend({ EffectComposer, RenderPass, SSAOPass })
+extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
 
 const stats = new Stats()
 const camDest = new Vector3(0, 100, 100)
@@ -95,25 +96,42 @@ const CameraController = ({playground, setChatVisible, chatVisible}) => {
     return null;
 }
 
-// function Effects() {
-//     const { gl, scene, camera, size } = useThree()
-//     const composer = useRef()
-//     useEffect(() => void composer.current.setSize(size.width, size.height), [size])
-//     useFrame(() => composer.current.render(), 1)
-//     return (
-//         <effectComposer ref={composer} args={[gl]}>
-//             <renderPass attachArray="passes" args={[scene, camera]} />
-//             <sSAOPass attachArray="passes" args={[scene, camera, size.width, size.height]}/>
-//         </effectComposer>
-//     )
-// }
+function Effects({ssao, bloom}) {
+    const { gl, scene, camera, size } = useThree()
+    const composer = useRef()
+    useEffect(() => void composer.current.setSize(size.width, size.height), [size])
+    useFrame(() => composer.current.render(), 1)
+    return (
+        <effectComposer ref={composer} args={[gl]}>
+            <renderPass attachArray="passes" args={[scene, camera]} />
+            {bloom && 
+                <unrealBloomPass
+                    attachArray="passes"
+                    args={[undefined, 1.5, 0.4, 0.60]}
+                    bloomThreshold={1}
+                    bloomStrength={1}
+                    bloomRadius={0}
+                />
+            }
+            {ssao &&
+                <sSAOPass
+                    attachArray="passes"
+                    args={[scene, camera, size.width, size.height]}
+                    kernelRadius={16}
+                    minDistance={0.005}
+                    maxDistance={50}
+                />
+            }
+        </effectComposer>
+    )
+}
 
 function MainCanvas({player}) {
     const [players, setPlayers] = useState([])
     const [messages, setMessages] = useState([])
     const [playground, setPlayground] = useState(null)
     const [chatVisible, setChatVisible] = useState(false)
-    const grassTexture = useMemo(() => new THREE.TextureLoader().load("grasslight-big.jpg"), [])
+    const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
 
     useEffect(() => {
         setPlayground(new Playground(player, players => setPlayers(players), messages => setMessages(messages)))
@@ -123,19 +141,21 @@ function MainCanvas({player}) {
         <div className="main-canvas-container">
             <Canvas
                 style={{ backgroundColor: "#789" }}
-                gl={{ antialias: false, alpha: true }}
+                gl={{ antialias: false, alpha: false}}
                 pixelRatio={window.devicePixelRatio}
                 camera={{ position: [0, 10, 10], near: 1, far: 4000 }}
                 shadowMap
                 onCreated={({ gl }) => {
-                    gl.toneMapping = THREE.ReinhardToneMapping
+                    gl.toneMapping = THREE.Uncharted2ToneMapping
                     gl.outputEncoding = THREE.sRGBEncoding
                     gl.shadowMap.type = THREE.PCFSoftShadowMap
+                    gl.setClearColor(new THREE.Color("#667788"))
                 }}
             >
-                {/* <Effects /> */}
+                <Effects />
+
                 <CameraController playground={playground} setChatVisible={setChatVisible} chatVisible={chatVisible} />
-                <fog attach="fog" args={[0x778899, 1000, 4000]} />
+                <fog attach="fog" args={[0x667788, 1000, 4000]} />
                 <ambientLight args={[0x666666]} />
                 <directionalLight
                     args={[0xffffff, 7]}
@@ -160,9 +180,9 @@ function MainCanvas({player}) {
                     )}
                 >
                     <planeBufferGeometry attach="geometry" args={[16000, 16000]} />
-                    <meshLambertMaterial attach="material">
-                        <primitive attach="map" object={grassTexture} repeat={[64, 64]} wrapS={THREE.RepeatWrapping} wrapT={THREE.RepeatWrapping} encoding={THREE.sRGBEncoding} />
-                    </meshLambertMaterial>
+                    <meshStandardMaterial attach="material" color={0x333333} roughness={0.55} metalness={0.8}>
+                        <primitive attach="map" object={grassTexture} repeat={[64, 64]} wrapS={THREE.RepeatWrapping} wrapT={THREE.RepeatWrapping} encoding={THREE.sRGBEncoding}/>
+                    </meshStandardMaterial>
                 </mesh>
             </Canvas>
             {playground && chatVisible &&

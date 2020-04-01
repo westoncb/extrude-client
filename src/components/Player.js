@@ -43,11 +43,14 @@ function Player({ player, messages }) {
             md2.controls.moveBackward = player.keyStates['s']
             md2.controls.moveLeft = player.keyStates['a']
             md2.controls.moveRight = player.keyStates['d']
+            md2.controls.moveUp = player.keyStates['q']
+            md2.controls.moveDown = player.keyStates['e']
             md2.controls.jump = player.keyStates[' ']
             md2.controls.attack = player.keyStates['f']
             md2.target = player.target
             md2.update(delta * PLAYER_SPEED_SCALE)
             player.position.x = md2.root.position.x
+            player.position.y = md2.root.position.y
             player.position.z = md2.root.position.z
         }
     })
