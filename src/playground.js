@@ -16,7 +16,7 @@ class Playground {
     state = {players: {}}
     messages = []
 
-    static RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q", " "]
+    static RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
     static KEY_TO_DIRECTION = { a: 'left', w: "up", s: "down", d: "right"}
 
     constructor(player, updatePlayers, updateMessagesFunc) {
@@ -122,7 +122,7 @@ class Playground {
             case "player_sync":
                 if (event.player.id === this.localPlayerId)
                     break
-                    
+
                 this.state.players[event.player.id] = event.player
                 this.updatePlayers(Object.values(this.state.players))
                 break;

@@ -37,7 +37,7 @@ function Player({ player, messages }) {
 
             const matLine = new LineMaterial({
                 color: 0x11ff66,
-                linewidth: 2, // in pixels
+                linewidth: 1, // in pixels
                 vertexColors: false,
                 dashed: false,
                 resolution: new Vector2(size.width, size.height)
@@ -63,10 +63,10 @@ function Player({ player, messages }) {
 
     useFrame((info, delta) => {
         if (md2) {
-            md2.controls.moveForward = player.keyStates['w']
-            md2.controls.moveBackward = player.keyStates['s']
-            md2.controls.moveLeft = player.keyStates['a']
-            md2.controls.moveRight = player.keyStates['d']
+            md2.controls.moveForward = player.keyStates['w'] || player.keyStates['ArrowUp']
+            md2.controls.moveBackward = player.keyStates['s'] || player.keyStates['ArrowDown']
+            md2.controls.moveLeft = player.keyStates['a'] || player.keyStates['ArrowLeft']
+            md2.controls.moveRight = player.keyStates['d'] || player.keyStates['ArrowRight']
             md2.controls.moveUp = player.keyStates['q']
             md2.controls.moveDown = player.keyStates['e']
             md2.controls.jump = player.keyStates[' ']
