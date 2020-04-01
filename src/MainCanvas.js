@@ -133,6 +133,7 @@ function MainCanvas({player}) {
     const [messages, setMessages] = useState([])
     const [playground, setPlayground] = useState(null)
     const [chatVisible, setChatVisible] = useState(false)
+    const [structures, setStructures] = useState([])
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
 
     useEffect(() => {
@@ -148,8 +149,9 @@ function MainCanvas({player}) {
         MeshEvents.click(e)
     }
 
-    const finishStructure = points => {
-        
+    const finishStructure = structure => {
+        console.log("finished structure", structure)
+        setStructures([...structures, structure])
     }
 
     return (

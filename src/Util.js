@@ -1,4 +1,4 @@
-import {Box3} from 'three'
+import {Box3, Vector3} from 'three'
 
 class Util {
     static randString(length) {
@@ -79,6 +79,34 @@ class Util {
 
     static exponentialEaseOut(k) {
         return k === 1 ? 1 : - Math.pow(2, - 10 * k) + 1;
+    }
+
+    /*
+    From: https://github.com/ayamflow/polygon-centroid
+  */
+    static centroid(points) {
+        const l = points.length;
+
+        return points.reduce((center, p, i) => {
+            center.x += p.x;
+            center.y += p.y;
+            center.z += p.z;
+
+            if (i === l - 1) {
+                center.x /= l;
+                center.y /= l;
+                center.z /= l;
+            }
+
+            return center;
+        }, new Vector3(0, 0, 0));
+    }
+
+    static pointsAreEqual3D(p1, p2, threshold = 0.001) {
+        return (
+            Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2 + (p2.z - p1.z) ** 2) <
+            threshold
+        );
     }
 }
 

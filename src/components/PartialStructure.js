@@ -5,6 +5,7 @@ import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 import MeshEvents from '../MeshEvents'
+import Util from '../Util'
 
 extend({ LineMaterial, LineGeometry, Line2 })
 
@@ -41,7 +42,17 @@ function PartialStructure({finishStructureFunc}) {
             setPoints([...points, vec])
 
             if (finish) {
-                finishStructureFunc(points)
+                const rotation = e.object.rotation.clone()
+                rotation.x *= -1
+                rotation.y *= -1
+                rotation.z *= -1
+
+                const normal = e.face.normal.clone().applyEuler(rotation)
+                const centroid = Util.centroid(points)
+                const extrusionLine = {start: centroid, end: centroid.clone().addScaledVector(normal, 10)}
+                const structure = { points, extrusionLine }
+
+                finishStructureFunc(structure)
                 setPoints([])
                 setInSnapRange(false)
                 setCursorPoint(null)
