@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { Shape } from 'three'
+import { Vector3 } from 'three'
 import { extend, useThree, useUpdate } from "react-three-fiber"
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
@@ -10,20 +10,42 @@ extend({ LineMaterial, LineGeometry, Line2 })
 
 const MAX_POLY_POINTS = 50
 
-function PartialStructure() {
+function PartialStructure({finishStructureFunc}) {
     const [points, setPoints] = useState([])
     const [cursorPoint, setCursorPoint] = useState(null)
+    const [inSnapRange, setInSnapRange] = useState(false)
     const { size } = useThree()
 
     useEffect(() => {
         const handleMeshMouseMove = e => {
             if (points.length > 0) {
-                setCursorPoint({ ...e.point, y: e.point.y+0.1})
+                const vec = new Vector3(e.point.x, e.point.y+0.1, e.point.z)
+                setCursorPoint(vec)
             }
         }
 
         const handleMeshClick = e => {
-            setPoints([...points, { ...e.point, y: e.point.y + 0.1 }])
+            const vec = new Vector3(e.point.x, e.point.y, e.point.z)
+
+            let finish = false
+            if (points.length > 2) {
+                const snapDiffVec = vec.clone().sub(points[0])
+                if (snapDiffVec.length() < 20) {
+                    vec.add(snapDiffVec)
+                    finish = true
+                }
+            }
+
+            vec.y += 0.1
+
+            setPoints([...points, vec])
+
+            if (finish) {
+                finishStructureFunc(points)
+                setPoints([])
+                setInSnapRange(false)
+                setCursorPoint(null)
+            }
         }
 
         MeshEvents.listenFor({
@@ -37,9 +59,28 @@ function PartialStructure() {
             geom.setPositions(new Float32Array(MAX_POLY_POINTS*3))
             return
         }
+
+        const modCursorPoint = cursorPoint.clone()
+        if (points.length > 2) {
+            const snapDiffVec = points[0].clone().sub(cursorPoint)
+
+            if (snapDiffVec.length() < 20) {
+                modCursorPoint.add(snapDiffVec)
+                setInSnapRange(true)
+            } else {
+                setInSnapRange(false)
+            }
+
+            if (points[0].clone().sub(points[points.length - 1]).length() < 0.1) {
+                finishStructureFunc(points)
+                setPoints([])
+                setInSnapRange(false)
+                setCursorPoint(null)
+            }
+        }
             
         const finalPoints = points.reduce((acc, { x, y, z }) => [...acc, x, y, z], [], [])
-        finalPoints.push(cursorPoint.x, cursorPoint.y, cursorPoint.z)
+        finalPoints.push(modCursorPoint.x, modCursorPoint.y, modCursorPoint.z)
 
         // The number of points always has to be exactly the same,
         // so will fill the end with the last point added repeatedly
@@ -59,10 +100,10 @@ function PartialStructure() {
                 <lineMaterial attach="material" color={0xffff11} linewidth={5} resolution={[size.width, size.height]} />
             </line2>
 
-            {points.map(point => (
+            {points.map((point, i) => (
                 <mesh key={point.x+point.y+point.z+""} position={[point.x, point.y, point.z]}>
-                    <sphereGeometry attach="geometry" args={[7, 32, 32]} />
-                    <meshPhysicalMaterial attach="material" color={0xffff11} clearcoat metalness={0.99} clearcoatRoughness={0.25} roughness={0} emmissive={0xffffff}/>
+                    <sphereGeometry attach="geometry" args={[(i === 0 && inSnapRange) ? 12 : 7, 32, 32]} />
+                    <meshPhysicalMaterial attach="material" color={(i === 0 && inSnapRange) ? 0x00ff00 : 0xffff11} clearcoat metalness={0.95} clearcoatRoughness={0.25} roughness={0} emmissive={0xffffff}/>
                 </mesh>
             ))}
         </>

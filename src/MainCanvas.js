@@ -148,6 +148,10 @@ function MainCanvas({player}) {
         MeshEvents.click(e)
     }
 
+    const finishStructure = points => {
+        
+    }
+
     return (
         <div className="main-canvas-container">
             <Canvas
@@ -184,7 +188,7 @@ function MainCanvas({player}) {
 
                 {players.map(player => <Player key={player.id} player={player} messages={player.visibleMessages} />)}
 
-                <PartialStructure/>
+                <PartialStructure finishStructureFunc={finishStructure}/>
 
                 <mesh receiveShadow 
                     rotation-x={- Math.PI / 2} 
