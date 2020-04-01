@@ -35,7 +35,7 @@ function Player({ player, messages }) {
 
             const matLine = new LineMaterial({
                 color: 0x11ff66,
-                linewidth: 0.003, // in pixels
+                linewidth: 0.002, // in pixels
                 vertexColors: false,
                 //resolution:  // to be set by renderer, eventually
                 dashed: false

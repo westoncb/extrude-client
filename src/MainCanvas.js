@@ -155,7 +155,7 @@ function MainCanvas({player}) {
                 <Effects />
 
                 <CameraController playground={playground} setChatVisible={setChatVisible} chatVisible={chatVisible} />
-                <fog attach="fog" args={[0x667788, 1000, 4000]} />
+                <fog attach="fog" args={[0x667788, 500, 1500]} />
                 <ambientLight args={[0x666666]} />
                 <directionalLight
                     args={[0xffffff, 7]}
