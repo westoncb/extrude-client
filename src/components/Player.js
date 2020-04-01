@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { useFrame, Dom } from 'react-three-fiber'
 import ModelFactory from '../ModelFactory'
 import Util from '../Util'
@@ -14,6 +17,7 @@ const PLAYER_SPEED_SCALE = 1.75
 function Player({ player, messages }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
+    const [laser, setLaser] = useState(null)
     // const [tick, setTick] = useState(0)
 
     useEffect(() => {
@@ -24,6 +28,25 @@ function Player({ player, messages }) {
             setMd2(instance)
 
             instance.root.position.set(player.position.x, instance.root.position.y, player.position.z)
+
+            const geometry = new LineGeometry();
+            geometry.setPositions([0, 0, 0, 0, 0, 100])
+            // geometry.setColors(colors)
+
+            const matLine = new LineMaterial({
+                color: 0x11ff66,
+                linewidth: 0.003, // in pixels
+                vertexColors: false,
+                //resolution:  // to be set by renderer, eventually
+                dashed: false
+
+            });
+
+            const line = new Line2(geometry, matLine)
+            line.computeLineDistances()
+            instance.root.add(line)
+
+            setLaser(line)
         })
     }, [])
 
@@ -52,6 +75,15 @@ function Player({ player, messages }) {
             player.position.x = md2.root.position.x
             player.position.y = md2.root.position.y
             player.position.z = md2.root.position.z
+
+            const pos = new THREE.Vector3(player.position.x, player.position.y, player.position.z)
+            const tar = new THREE.Vector3(md2.target.x, md2.target.y, md2.target.z)
+
+            tar.sub(pos)
+
+            laser.rotation.y = -md2.bodyOrientation
+            laser.geometry.setPositions([0, 20, 5, tar.x, tar.y, tar.z])
+            laser.geometry.needsUpdate = true
         }
     })
 
