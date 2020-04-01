@@ -3,7 +3,9 @@ import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { Canvas, extend, useThree, useFrame } from 'react-three-fiber'
 import Playground from './playground'
+import MeshEvents from './MeshEvents'
 import Player from './components/Player'
+import PartialStructure from './components/PartialStructure'
 import ChatWindow from './components/ChatWindow'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
@@ -137,6 +139,15 @@ function MainCanvas({player}) {
         setPlayground(new Playground(player, players => setPlayers(players), messages => setMessages(messages)))
     }, [player])
 
+    const handleMeshMouseMove = e => {
+        playground.getLocalPlayer().target = e.point
+        MeshEvents.mouseMove(e)
+    }
+
+    const handleMeshClick = e => {
+        MeshEvents.click(e)
+    }
+
     return (
         <div className="main-canvas-container">
             <Canvas
@@ -173,11 +184,12 @@ function MainCanvas({player}) {
 
                 {players.map(player => <Player key={player.id} player={player} messages={player.visibleMessages} />)}
 
+                <PartialStructure/>
+
                 <mesh receiveShadow 
                     rotation-x={- Math.PI / 2} 
-                    onPointerMove={e => (
-                        playground.getLocalPlayer().target = e.point
-                    )}
+                    onPointerMove={handleMeshMouseMove}
+                    onClick={handleMeshClick}
                 >
                     <planeBufferGeometry attach="geometry" args={[16000, 16000]} />
                     <meshStandardMaterial attach="material" color={0x333333} roughness={0.55} metalness={0.8}>

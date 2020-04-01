@@ -3,10 +3,11 @@ import * as THREE from 'three'
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
-import { useFrame, Dom } from 'react-three-fiber'
+import { useFrame, Dom, useThree } from 'react-three-fiber'
 import ModelFactory from '../ModelFactory'
 import Util from '../Util'
 import './Player.css'
+import { Vector2 } from 'three';
 
 // let imageCapture
 // let texture
@@ -18,6 +19,7 @@ function Player({ player, messages }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
     const [laser, setLaser] = useState(null)
+    const { size } = useThree()
     // const [tick, setTick] = useState(0)
 
     useEffect(() => {
@@ -35,11 +37,10 @@ function Player({ player, messages }) {
 
             const matLine = new LineMaterial({
                 color: 0x11ff66,
-                linewidth: 0.002, // in pixels
+                linewidth: 2, // in pixels
                 vertexColors: false,
-                //resolution:  // to be set by renderer, eventually
-                dashed: false
-
+                dashed: false,
+                resolution: new Vector2(size.width, size.height)
             });
 
             const line = new Line2(geometry, matLine)
