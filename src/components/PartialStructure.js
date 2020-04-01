@@ -50,7 +50,7 @@ function PartialStructure({finishStructureFunc}) {
                 const normal = e.face.normal.clone().applyEuler(rotation)
                 const centroid = Util.centroid(points)
                 const extrusionLine = {start: centroid, end: centroid.clone().addScaledVector(normal, 10)}
-                const structure = { points, extrusionLine }
+                const structure = { id: Util.generateId(), points, extrusionLine }
 
                 finishStructureFunc(structure)
                 setPoints([])

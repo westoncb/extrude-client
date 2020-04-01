@@ -108,6 +108,10 @@ class Util {
             threshold
         );
     }
+
+    static generateId() {
+        return "" + Math.round(Math.random() * 10000)
+    }
 }
 
 export default Util

@@ -6,6 +6,7 @@ import Playground from './playground'
 import MeshEvents from './MeshEvents'
 import Player from './components/Player'
 import PartialStructure from './components/PartialStructure'
+import Structure from './components/Structure'
 import ChatWindow from './components/ChatWindow'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
@@ -191,6 +192,8 @@ function MainCanvas({player}) {
                 {players.map(player => <Player key={player.id} player={player} messages={player.visibleMessages} />)}
 
                 <PartialStructure finishStructureFunc={finishStructure}/>
+
+                {structures.map(structure => <Structure key={structure.id} points={structure.points} extrusionLine={structure.extrusionLine}/>)}
 
                 <mesh receiveShadow 
                     rotation-x={- Math.PI / 2} 

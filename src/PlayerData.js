@@ -8,7 +8,7 @@ class Player {
     static create(name = Util.randString(Util.rand(3, 12))) {
         return  {
                     name,
-                    id: ""+Math.round(Math.random() * 10000), //Important this is a string!
+                    id: Util.generateId(),
                     position: new Vector3(Util.rand(-100, 100), 0, Util.rand(-100, 100)),
                     visibleMessages: [],
                     keyStates: {},
