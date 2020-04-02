@@ -11,7 +11,7 @@ extend({ LineMaterial, LineGeometry, Line2 })
 
 const MAX_POLY_POINTS = 50
 
-function PartialStructure({finishStructureFunc}) {
+function PartialStructure({player, finishStructureFunc}) {
     const [points, setPoints] = useState([])
     const [cursorPoint, setCursorPoint] = useState(null)
     const [inSnapRange, setInSnapRange] = useState(false)

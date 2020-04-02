@@ -71,12 +71,12 @@ function Player({ player, messages, mode }) {
             md2.controls.moveDown = player.keyStates['e']
             md2.controls.jump = player.keyStates[' ']
             md2.controls.attack = player.keyStates['f']
-            md2.target = player.target
             md2.update(delta * PLAYER_SPEED_SCALE)
             player.position.x = md2.root.position.x
             player.position.y = md2.root.position.y
             player.position.z = md2.root.position.z
 
+            md2.target = player.target
             const pos = new THREE.Vector3(player.position.x, player.position.y, player.position.z)
             const tar = new THREE.Vector3(md2.target.x, md2.target.y, md2.target.z)
 
@@ -121,11 +121,11 @@ function linePropsForMode(mode) {
         case Const.PLAYER_MODE_CREATE:
             return { color: 0x11ff66, size: 2}
         case Const.PLAYER_MODE_EDIT:
-            return { color: 0x882288, size: 2 }
+            return { color: 0x0033dd, size: 2 }
         case Const.PLAYER_MODE_DRAG:
-            return { color: 0xff22ff, size: 7 }
+            return { color: 0x2255ff, size: 7 }
         case Const.PLAYER_MODE_OBJECT:
-            return { color: 0x1144ff, size: 2 }
+            return { color: 0x882288, size: 2 }
         default:
             console.error("unrecognized player mode", mode)
             break;

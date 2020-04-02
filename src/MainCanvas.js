@@ -155,6 +155,7 @@ function MainCanvas({player}) {
 
     const handleMeshMouseMove = e => {
         playground.getLocalPlayer().target = e.point
+        player.target = e.point
         MeshEvents.eventOccurred(MeshEvents.MOUSE_MOVE, e)
     }
     const handleMeshClick = e => {
@@ -212,7 +213,7 @@ function MainCanvas({player}) {
                 {players.map(player => <Player key={player.id} player={player} mode={playerMode} messages={player.visibleMessages} />)}
 
                 {playerMode === Const.PLAYER_MODE_CREATE &&
-                    <PartialStructure finishStructureFunc={finishStructure} />
+                    <PartialStructure player={player} finishStructureFunc={finishStructure} />
                 }
 
                 {structures.map(structure => <Structure 
@@ -220,6 +221,7 @@ function MainCanvas({player}) {
                                                 id={structure.id}
                                                 points={structure.points}
                                                 extrusionLine={structure.extrusionLine}
+                                                player={playground.getLocalPlayer()}
                                                 onPointerMove={handleMeshMouseMove}
                                                 onClick={handleMeshClick}
                                                 onPointerOut={handleMeshPointerOut}

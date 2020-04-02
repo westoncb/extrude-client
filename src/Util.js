@@ -110,7 +110,7 @@ class Util {
     }
 
     static generateId() {
-        return "" + Math.round(Math.random() * 10000)
+        return "" + Math.round(Math.random() * 1000000)
     }
 }
 
