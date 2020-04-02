@@ -10,6 +10,10 @@ class MeshEvents {
         MeshEvents.eventMaps[id] = eventsToHandlers
     }
 
+    static removeListener(id) {
+        delete MeshEvents.eventMaps[id]
+    }
+
     static eventOccurred(type, event) {
         Object.values(MeshEvents.eventMaps).forEach(handlerMap => {
             const meshQualifies = !handlerMap.includedMeshes || handlerMap.includedMeshes.includes(event.object.id)

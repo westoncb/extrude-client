@@ -63,6 +63,11 @@ function PartialStructure({finishStructureFunc}) {
             [MeshEvents.MOUSE_MOVE]: handleMeshMouseMove,
             [MeshEvents.CLICK]: handleMeshClick,
         })
+
+        return () => {
+            MeshEvents.removeListener("partial_structure")
+        }
+
     }, [points])
 
     const ref = useUpdate(geom => {

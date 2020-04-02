@@ -8,6 +8,7 @@ import ModelFactory from '../ModelFactory'
 import Util from '../Util'
 import './Player.css'
 import { Vector2 } from 'three';
+import Const from '../constants'
 
 // let imageCapture
 // let texture
@@ -15,7 +16,7 @@ import { Vector2 } from 'three';
 
 const PLAYER_SPEED_SCALE = 1.75
 
-function Player({ player, messages }) {
+function Player({ player, messages, mode }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
     const [laser, setLaser] = useState(null)
@@ -33,23 +34,22 @@ function Player({ player, messages }) {
 
             const geometry = new LineGeometry();
             geometry.setPositions([0, 0, 0, 0, 0, 100])
-            // geometry.setColors(colors)
 
+            const lineProps = linePropsForMode(mode)
             const matLine = new LineMaterial({
-                color: 0x11ff66,
-                linewidth: 1, // in pixels
+                color: lineProps.color,
+                linewidth: lineProps.size,
                 vertexColors: false,
                 dashed: false,
                 resolution: new Vector2(size.width, size.height)
             });
 
             const line = new Line2(geometry, matLine)
-            line.computeLineDistances()
             instance.root.add(line)
 
             setLaser(line)
         })
-    }, [])
+    }, [mode])
 
     // useEffect(() => {
     //     setInterval(() => {
@@ -114,6 +114,22 @@ function Player({ player, messages }) {
             }
         </mesh>
     )
+}
+
+function linePropsForMode(mode) {
+    switch (mode) {
+        case Const.PLAYER_MODE_CREATE:
+            return { color: 0x11ff66, size: 2}
+        case Const.PLAYER_MODE_EDIT:
+            return { color: 0x882288, size: 2 }
+        case Const.PLAYER_MODE_DRAG:
+            return { color: 0xff22ff, size: 7 }
+        case Const.PLAYER_MODE_OBJECT:
+            return { color: 0x1144ff, size: 2 }
+        default:
+            console.error("unrecognized player mode", mode)
+            break;
+    }
 }
 
 // function getVideoTexture() {

@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { Canvas, extend, useThree, useFrame } from 'react-three-fiber'
 import Playground from './playground'
+import Const from './constants'
 import MeshEvents from './MeshEvents'
 import Player from './components/Player'
 import PartialStructure from './components/PartialStructure'
@@ -20,13 +21,12 @@ extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
 const stats = new Stats()
 const camDest = new Vector3(0, 100, 100)
 const camLookAtDest = new Vector3(0, 0, 0)
-const curLookAtVect = new Vector3()
 const lastLookAtVec = new Vector3()
 
 let camZoom = 1
 
-const CameraController = ({playground, setChatVisible, chatVisible}) => {
-    const { camera, gl } = useThree();
+const CameraController = ({playground}) => {
+    const { camera } = useThree()
 
     useFrame(() => {
         stats.update()
@@ -56,7 +56,12 @@ const CameraController = ({playground, setChatVisible, chatVisible}) => {
         lastLookAtVec.copy(newLookAt)
     })
 
-    // should be in a different component...
+    return null;
+}
+
+function InputHandler({ playground, setChatVisible, chatVisible, setPlayerMode}) {
+    const {gl } = useThree();
+
     useEffect(() => {
         gl.domElement.onclick = e => {
             setChatVisible(false)
@@ -74,8 +79,14 @@ const CameraController = ({playground, setChatVisible, chatVisible}) => {
                 setChatVisible(true)
             } else if (e.which === 27) { //escape key
                 setChatVisible(!chatVisible)
+
+            } else if (e.key === 'j') {
+                setPlayerMode(Const.PLAYER_MODE_CREATE)
+            } else if (e.key === 'k') {
+                setPlayerMode(Const.PLAYER_MODE_EDIT)
+            } else if (e.key === 'l') {
+                setPlayerMode(Const.PLAYER_MODE_OBJECT)
             }
-                
 
             if (playground && !chatVisible)
                 playground.localKeyDown(e)
@@ -96,7 +107,7 @@ const CameraController = ({playground, setChatVisible, chatVisible}) => {
         }
     }, [gl, playground, chatVisible])
 
-    return null;
+    return null
 }
 
 function Effects({ssao, bloom}) {
@@ -136,6 +147,7 @@ function MainCanvas({player}) {
     const [chatVisible, setChatVisible] = useState(false)
     const [structures, setStructures] = useState([])
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
+    const [playerMode, setPlayerMode] = useState(Const.PLAYER_MODE_CREATE)
 
     useEffect(() => {
         setPlayground(new Playground(player, players => setPlayers(players), messages => setMessages(messages)))
@@ -153,9 +165,13 @@ function MainCanvas({player}) {
     }
 
     const finishStructure = structure => {
-        console.log("finished structure", structure)
         setStructures([...structures, structure])
+        setPlayerMode(Const.PLAYER_MODE_EDIT)
     }
+
+    useEffect(() => {
+        console.log("MODE: ", playerMode)
+    }, [playerMode])
 
     return (
         <div className="main-canvas-container">
@@ -174,7 +190,9 @@ function MainCanvas({player}) {
             >
                 <Effects />
 
-                <CameraController playground={playground} setChatVisible={setChatVisible} chatVisible={chatVisible} />
+                <CameraController playground={playground} />
+                <InputHandler playground={playground} setChatVisible={setChatVisible} chatVisible={chatVisible} setPlayerMode={setPlayerMode} />
+
                 <fog attach="fog" args={[0x667788, 500, 1500]} />
                 <ambientLight args={[0x666666]} />
                 <directionalLight
@@ -191,9 +209,11 @@ function MainCanvas({player}) {
                     castShadow
                 />
 
-                {players.map(player => <Player key={player.id} player={player} messages={player.visibleMessages} />)}
+                {players.map(player => <Player key={player.id} player={player} mode={playerMode} messages={player.visibleMessages} />)}
 
-                <PartialStructure finishStructureFunc={finishStructure}/>
+                {playerMode === Const.PLAYER_MODE_CREATE &&
+                    <PartialStructure finishStructureFunc={finishStructure} />
+                }
 
                 {structures.map(structure => <Structure 
                                                 key={structure.id}
@@ -203,6 +223,8 @@ function MainCanvas({player}) {
                                                 onPointerMove={handleMeshMouseMove}
                                                 onClick={handleMeshClick}
                                                 onPointerOut={handleMeshPointerOut}
+                                                playerMode={playerMode}
+                                                setPlayerMode={setPlayerMode}
                                             />)}
 
                 <mesh receiveShadow 
