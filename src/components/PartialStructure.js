@@ -10,6 +10,7 @@ import Util from '../Util'
 extend({ LineMaterial, LineGeometry, Line2 })
 
 const MAX_POLY_POINTS = 50
+const SNAP_RADIUS = 30
 
 function PartialStructure({player, finishStructureFunc}) {
     const [points, setPoints] = useState([])
@@ -81,7 +82,7 @@ function PartialStructure({player, finishStructureFunc}) {
             const snapDiffVec = points[0].clone().sub(cursorPoint)
 
             // within snap radius
-            if (snapDiffVec.length() < 20) {
+            if (snapDiffVec.length() < SNAP_RADIUS) {
                 modCursorPoint.add(snapDiffVec)
                 setInSnapRange(true)
             } else {
@@ -115,13 +116,13 @@ function PartialStructure({player, finishStructureFunc}) {
         <>
             <line2>
                 <lineGeometry attach="geometry" ref={ref} />
-                <lineMaterial attach="material" color={0xffff11} linewidth={5} resolution={[size.width, size.height]} />
+                <lineMaterial attach="material" color={0x66ff11} linewidth={10} resolution={[size.width, size.height]} />
             </line2>
 
             {points.map((point, i) => (
-                <mesh key={point.x+point.y+point.z+""} position={[point.x, point.y, point.z]}>
-                    <sphereGeometry attach="geometry" args={[(i === 0 && inSnapRange) ? 12 : 7, 32, 32]} />
-                    <meshPhysicalMaterial attach="material" color={(i === 0 && inSnapRange) ? 0x00ff00 : 0xffff11} clearcoat metalness={0.95} clearcoatRoughness={0.25} roughness={0} emmissive={0xffffff}/>
+                <mesh key={point.x+point.y+point.z+""} castShadow position={[point.x, point.y, point.z]}>
+                    <sphereGeometry attach="geometry" args={[(i === 0 && inSnapRange) ? SNAP_RADIUS : 7, 32, 32]} />
+                    <meshPhysicalMaterial attach="material" color={(i === 0 && inSnapRange) ? 0x00ff00 : 0x117700} clearcoat metalness={0.25} clearcoatRoughness={0.75} roughness={0.1}/>
                 </mesh>
             ))}
         </>

@@ -119,11 +119,11 @@ function Player({ player, messages, mode }) {
 function linePropsForMode(mode) {
     switch (mode) {
         case Const.PLAYER_MODE_CREATE:
-            return { color: 0x11ff66, size: 2}
+            return { color: 0x66ff11, size: 2}
         case Const.PLAYER_MODE_EDIT:
             return { color: 0x0033dd, size: 2 }
         case Const.PLAYER_MODE_DRAG:
-            return { color: 0x2255ff, size: 7 }
+            return { color: 0x11ff66, size: 7 }
         case Const.PLAYER_MODE_OBJECT:
             return { color: 0x882288, size: 2 }
         default:
