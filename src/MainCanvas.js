@@ -143,11 +143,13 @@ function MainCanvas({player}) {
 
     const handleMeshMouseMove = e => {
         playground.getLocalPlayer().target = e.point
-        MeshEvents.mouseMove(e)
+        MeshEvents.eventOccurred(MeshEvents.MOUSE_MOVE, e)
     }
-
     const handleMeshClick = e => {
-        MeshEvents.click(e)
+        MeshEvents.eventOccurred(MeshEvents.CLICK, e)
+    }
+    const handleMeshPointerOut = e => {
+        MeshEvents.eventOccurred(MeshEvents.POINTER_OUT, e)
     }
 
     const finishStructure = structure => {
@@ -195,10 +197,12 @@ function MainCanvas({player}) {
 
                 {structures.map(structure => <Structure 
                                                 key={structure.id}
+                                                id={structure.id}
                                                 points={structure.points}
                                                 extrusionLine={structure.extrusionLine}
                                                 onPointerMove={handleMeshMouseMove}
                                                 onClick={handleMeshClick}
+                                                onPointerOut={handleMeshPointerOut}
                                             />)}
 
                 <mesh receiveShadow 

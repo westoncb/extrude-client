@@ -1,19 +1,24 @@
 class MeshEvents {
     static MOUSE_MOVE = 'mouse_move'
     static CLICK = 'click'
+    static POINTER_OUT = 'pointer_out'
     static eventMaps = {}
 
-    static listenFor(id, eventsToHandlers) {
+    static listenFor(id, eventsToHandlers, includedMeshes) {
 
+        eventsToHandlers.includedMeshes = includedMeshes
         MeshEvents.eventMaps[id] = eventsToHandlers
+
+        console.log("registering", id, MeshEvents.eventMaps)
     }
 
-    static mouseMove(event) {
-        Object.values(MeshEvents.eventMaps).forEach(handlerMap => handlerMap['mouse_move'] ? handlerMap['mouse_move'](event) : null)
-    }
-
-    static click(event) {
-        Object.values(MeshEvents.eventMaps).forEach(handlerMap => handlerMap['click'] ? handlerMap['click'](event) : null)
+    static eventOccurred(type, event) {
+        Object.values(MeshEvents.eventMaps).forEach(handlerMap => {
+            const meshQualifies = !handlerMap.includedMeshes || handlerMap.includedMeshes.includes(event.object.id)
+            if (meshQualifies && handlerMap[type]) {
+                 handlerMap[type](event)
+            }
+        })
     }
 }
 

@@ -3,7 +3,7 @@ import { Shape, Vector2 } from 'three'
 import { useUpdate } from 'react-three-fiber'
 import MeshEvents from '../MeshEvents'
 
-function Structure({points, extrusionLine, onPointerMove, onClick}) {
+function Structure({points, extrusionLine, onPointerMove, onClick, onPointerOut, id}) {
     const [bPoints, setBPoints] = useState(points)
     const [tPoints, setTPoints] = useState([])
     const [baseShape, setBaseShape] = useState(null)
@@ -35,45 +35,42 @@ function Structure({points, extrusionLine, onPointerMove, onClick}) {
             setRestructured(true)
         }
 
-        if (clickedIndex > -1) {
-            for (let i = 0; i < geo.groups.length; i++) {
-                const group = geo.groups[i]
-                if (clickedIndex >= group.start && clickedIndex <= group.start + group.count) {
-                    group.materialIndex = 1
-                } else {
-                    group.materialIndex = 0
-                }
+        for (let i = 0; i < geo.groups.length; i++) {
+            const group = geo.groups[i]
+            if (clickedIndex >= group.start && clickedIndex <= group.start + group.count) {
+                group.materialIndex = 1
+            } else {
+                group.materialIndex = 0
             }
         }
     }, [bPoints, extrusionLine, clickedIndex])
 
     useEffect(() => {
         const handleMeshMouseMove = e => {
-            if (e.object.id !== meshRef.current.id) {
-                setClickedIndex(-1)
-                return
-            }
             setClickedIndex(e.face.a)
         }
 
         const handleMeshClick = e => {
-            console.log("CLICK", e)
-            if (e.object.id !== meshRef.current.id)
-                return
-
             setClickedIndex(e.faceIndex)
         }
 
-        MeshEvents.listenFor("partial_structure", {
-            [MeshEvents.MOUSE_MOVE]: handleMeshMouseMove,
-            [MeshEvents.CLICK]: handleMeshClick,
-        })
-    }, [])
+        const handlePointerOut = e => {
+            setClickedIndex(-1)
+        }
+
+        if (meshRef.current) {
+            MeshEvents.listenFor("structure_" + id, {
+                [MeshEvents.MOUSE_MOVE]: handleMeshMouseMove,
+                [MeshEvents.CLICK]: handleMeshClick,
+                [MeshEvents.POINTER_OUT]: handlePointerOut
+            }, [meshRef.current.id])
+        }
+    }, [meshRef.current])
 
     return (
         <>
             {baseShape &&
-                <mesh ref={meshRef} rotation-x={Math.PI/2} position-y={4} castShadow onPointerMove={onPointerMove} onClick={onClick}>
+                <mesh ref={meshRef} rotation-x={Math.PI/2} position-y={4} castShadow onPointerMove={onPointerMove} onClick={onClick} onPointerOut={onPointerOut}>
                     <extrudeBufferGeometry ref={geoRef} attach="geometry" args={[baseShape, extrudeSettings]} />
                     <meshPhysicalMaterial attachArray="material" color={0xffffff} metalness={0.9} roughness={0} clearcoat clearcoatRoughness={0.25} />
                     <meshPhysicalMaterial attachArray="material" color={0x33ff33} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
