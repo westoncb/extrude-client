@@ -59,7 +59,7 @@ function PartialStructure({finishStructureFunc}) {
             }
         }
 
-        MeshEvents.listenFor({
+        MeshEvents.listenFor("partial_structure", {
             [MeshEvents.MOUSE_MOVE]: handleMeshMouseMove,
             [MeshEvents.CLICK]: handleMeshClick,
         })

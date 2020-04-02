@@ -193,7 +193,13 @@ function MainCanvas({player}) {
 
                 <PartialStructure finishStructureFunc={finishStructure}/>
 
-                {structures.map(structure => <Structure key={structure.id} points={structure.points} extrusionLine={structure.extrusionLine}/>)}
+                {structures.map(structure => <Structure 
+                                                key={structure.id}
+                                                points={structure.points}
+                                                extrusionLine={structure.extrusionLine}
+                                                onPointerMove={handleMeshMouseMove}
+                                                onClick={handleMeshClick}
+                                            />)}
 
                 <mesh receiveShadow 
                     rotation-x={- Math.PI / 2} 

@@ -1,20 +1,19 @@
 class MeshEvents {
     static MOUSE_MOVE = 'mouse_move'
     static CLICK = 'click'
-    static eventMaps = []
+    static eventMaps = {}
 
-    static listenFor(eventsToHandlers) {
+    static listenFor(id, eventsToHandlers) {
 
-        // can only handle 1 for now... (easier to override old handlers this way)
-        MeshEvents.eventMaps[0] = eventsToHandlers
+        MeshEvents.eventMaps[id] = eventsToHandlers
     }
 
     static mouseMove(event) {
-        MeshEvents.eventMaps.forEach(handlerMap => handlerMap['mouse_move'] ? handlerMap['mouse_move'](event) : null)
+        Object.values(MeshEvents.eventMaps).forEach(handlerMap => handlerMap['mouse_move'] ? handlerMap['mouse_move'](event) : null)
     }
 
     static click(event) {
-        MeshEvents.eventMaps.forEach(handlerMap => handlerMap['click'] ? handlerMap['click'](event) : null)
+        Object.values(MeshEvents.eventMaps).forEach(handlerMap => handlerMap['click'] ? handlerMap['click'](event) : null)
     }
 }
 
