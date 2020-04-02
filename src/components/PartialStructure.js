@@ -75,6 +75,7 @@ function PartialStructure({finishStructureFunc}) {
         if (points.length > 2) {
             const snapDiffVec = points[0].clone().sub(cursorPoint)
 
+            // within snap radius
             if (snapDiffVec.length() < 20) {
                 modCursorPoint.add(snapDiffVec)
                 setInSnapRange(true)
@@ -82,6 +83,7 @@ function PartialStructure({finishStructureFunc}) {
                 setInSnapRange(false)
             }
 
+            // Check if first and last points overlap
             if (points[0].clone().sub(points[points.length - 1]).length() < 0.1) {
                 finishStructureFunc(points)
                 setPoints([])
@@ -93,7 +95,7 @@ function PartialStructure({finishStructureFunc}) {
         const finalPoints = points.reduce((acc, { x, y, z }) => [...acc, x, y, z], [], [])
         finalPoints.push(modCursorPoint.x, modCursorPoint.y, modCursorPoint.z)
 
-        // The number of points always has to be exactly the same,
+        // The number of points must always be exactly the same,
         // so will fill the end with the last point added repeatedly
         while (finalPoints.length < MAX_POLY_POINTS*3) {
             finalPoints.push(finalPoints[finalPoints.length - 3], finalPoints[finalPoints.length - 2], finalPoints[finalPoints.length - 1])

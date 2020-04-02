@@ -8,8 +8,6 @@ class MeshEvents {
 
         eventsToHandlers.includedMeshes = includedMeshes
         MeshEvents.eventMaps[id] = eventsToHandlers
-
-        console.log("registering", id, MeshEvents.eventMaps)
     }
 
     static eventOccurred(type, event) {

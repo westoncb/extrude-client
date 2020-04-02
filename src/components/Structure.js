@@ -8,8 +8,7 @@ function Structure({points, extrusionLine, onPointerMove, onClick, onPointerOut,
     const [tPoints, setTPoints] = useState([])
     const [baseShape, setBaseShape] = useState(null)
     const [extrudeSettings, setExtrudeSettings] = useState({steps: 1, depth: 8})
-    const [clickedIndex, setClickedIndex] = useState(-1)
-    const [restructured, setRestructured] = useState(false)
+    const [hoverFaceIndex, setHoverFaceIndex] = useState(-1)
     const meshRef = useRef()
 
     useEffect(() => {
@@ -20,7 +19,36 @@ function Structure({points, extrusionLine, onPointerMove, onClick, onPointerOut,
     }, [bPoints, extrusionLine])
 
     const geoRef = useUpdate(geo => {
-        if (!restructured) {
+        for (let i = 0; i < geo.groups.length; i++) {
+            const group = geo.groups[i]
+            
+            // Code here is designed to allow selectng any face, but for now
+            // we only want the initial (main) face to be selectable so we
+            // restrict it with this hack.
+            const hack = group.start === 0
+
+            if (hack && hoverFaceIndex >= group.start && hoverFaceIndex <= group.start + group.count) {
+                group.materialIndex = 1
+            } else {
+                group.materialIndex = 0
+            }
+        }
+    }, [bPoints, extrusionLine, hoverFaceIndex])
+
+    useEffect(() => {
+        const handleMeshMouseMove = e => {
+            setHoverFaceIndex(e.face.a)
+        }
+        const handlePointerOut = e => {
+            setHoverFaceIndex(-1)
+        }
+
+        const handleMeshClick = e => {
+            
+        }
+
+        if (geoRef.current) {
+            const geo = geoRef.current
             const groups = []
 
             groups.push({ start: 0, count: (points.length - 2) * 6, materialIndex: 0 })
@@ -32,30 +60,6 @@ function Structure({points, extrusionLine, onPointerMove, onClick, onPointerOut,
 
             geo.clearGroups()
             groups.forEach(g => geo.addGroup(g.start, g.count, g.materialIndex))
-            setRestructured(true)
-        }
-
-        for (let i = 0; i < geo.groups.length; i++) {
-            const group = geo.groups[i]
-            if (clickedIndex >= group.start && clickedIndex <= group.start + group.count) {
-                group.materialIndex = 1
-            } else {
-                group.materialIndex = 0
-            }
-        }
-    }, [bPoints, extrusionLine, clickedIndex])
-
-    useEffect(() => {
-        const handleMeshMouseMove = e => {
-            setClickedIndex(e.face.a)
-        }
-
-        const handleMeshClick = e => {
-            setClickedIndex(e.faceIndex)
-        }
-
-        const handlePointerOut = e => {
-            setClickedIndex(-1)
         }
 
         if (meshRef.current) {
@@ -65,12 +69,12 @@ function Structure({points, extrusionLine, onPointerMove, onClick, onPointerOut,
                 [MeshEvents.POINTER_OUT]: handlePointerOut
             }, [meshRef.current.id])
         }
-    }, [meshRef.current])
+    }, [meshRef.current, geoRef.current])
 
     return (
         <>
             {baseShape &&
-                <mesh ref={meshRef} rotation-x={Math.PI/2} position-y={4} castShadow onPointerMove={onPointerMove} onClick={onClick} onPointerOut={onPointerOut}>
+                <mesh ref={meshRef} rotation-x={Math.PI/2} position-y={4} castShadow receiveShadow onPointerMove={onPointerMove} onClick={onClick} onPointerOut={onPointerOut}>
                     <extrudeBufferGeometry ref={geoRef} attach="geometry" args={[baseShape, extrudeSettings]} />
                     <meshPhysicalMaterial attachArray="material" color={0xffffff} metalness={0.9} roughness={0} clearcoat clearcoatRoughness={0.25} />
                     <meshPhysicalMaterial attachArray="material" color={0x33ff33} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
