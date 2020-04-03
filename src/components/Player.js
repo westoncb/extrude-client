@@ -3,7 +3,8 @@ import * as THREE from 'three'
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
-import { useFrame, Dom, useThree } from 'react-three-fiber'
+import { useFrame, useThree, Dom } from 'react-three-fiber'
+import { useDOM } from './w-hooks'
 import ModelFactory from '../ModelFactory'
 import Util from '../Util'
 import './Player.css'
@@ -23,9 +24,20 @@ function Player({ player, messages, mode }) {
     const { size } = useThree()
     // const [tick, setTick] = useState(0)
 
+    useDOM(['#player-label-' + player.id], ["md2-root-" + player.id])
+
+    useEffect(() => {
+        const label = document.createElement("div")
+        label.id = 'player-label-' + player.id
+        label.innerText = player.name
+        document.getElementsByClassName("App")[0].appendChild(label)
+    }, [])
+
     useEffect(() => {
         ModelFactory.getModelInstance(player.skindex).then(instance => {
             const bbox = Util.computeCompositeBoundingBox(instance.root)
+
+            instance.root.userData.name = "md2-root-"+player.id
 
             setHeight(bbox.getSize().y)
             setMd2(instance)
@@ -100,10 +112,6 @@ function Player({ player, messages, mode }) {
                             </meshBasicMaterial>
                         </mesh> */}
                     </primitive>
-
-                    <Dom center position={[player.position.x, player.position.y, player.position.z]}>
-                        <div className="scene-label">{player.name}</div>
-                    </Dom>
 
                     {messages.map((message, i) => (
                         <Dom key={message.time} center position={[player.position.x, player.position.y + height/1.5, player.position.z]}>
