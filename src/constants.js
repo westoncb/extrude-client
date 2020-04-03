@@ -1,6 +1,7 @@
 export default class Const {
-    static PLAYER_MODE_CREATE = "create"
-    static PLAYER_MODE_EDIT = "edit"
-    static PLAYER_MODE_DRAG = "drag"
-    static PLAYER_MODE_OBJECT = "object"
+    static MODE_DEFAULT = "default"
+    static MODE_MENU = "menu"
+    static MODE_EXTRUDE = "extrude"
+    static MODE_MATERIALS = "materials"
+    static STRUCTURE_MODE_EXTRUDE = 'structure_extrude'
 }

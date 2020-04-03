@@ -47,10 +47,14 @@ function Player({ player, messages, mode }) {
             const geometry = new LineGeometry();
             geometry.setPositions([0, 0, 0, 0, 0, 100])
 
-            const lineProps = linePropsForMode(mode)
+            // Laser colors
+            // 0x66ff11
+            // 0x0033dd
+            // 0x11ff66
+            // 0x882288
             const matLine = new LineMaterial({
-                color: lineProps.color,
-                linewidth: lineProps.size,
+                color: 0x66ff11,
+                linewidth: 2,
                 vertexColors: false,
                 dashed: false,
                 resolution: new Vector2(size.width, size.height)
@@ -61,7 +65,7 @@ function Player({ player, messages, mode }) {
 
             setLaser(line)
         })
-    }, [mode])
+    }, [])
 
     // useEffect(() => {
     //     setInterval(() => {
@@ -122,22 +126,6 @@ function Player({ player, messages, mode }) {
             }
         </mesh>
     )
-}
-
-function linePropsForMode(mode) {
-    switch (mode) {
-        case Const.PLAYER_MODE_CREATE:
-            return { color: 0x66ff11, size: 2}
-        case Const.PLAYER_MODE_EDIT:
-            return { color: 0x0033dd, size: 2 }
-        case Const.PLAYER_MODE_DRAG:
-            return { color: 0x11ff66, size: 7 }
-        case Const.PLAYER_MODE_OBJECT:
-            return { color: 0x882288, size: 2 }
-        default:
-            console.error("unrecognized player mode", mode)
-            break;
-    }
 }
 
 // function getVideoTexture() {

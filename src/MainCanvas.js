@@ -14,7 +14,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import './MainCanvas.css'
-import { Vector3, MathUtils, Vector2 } from 'three'
+import { Vector3, MathUtils } from 'three'
 
 extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
 
@@ -59,62 +59,12 @@ const CameraController = ({playground}) => {
     return null;
 }
 
-function InputHandler({ playground, setChatVisible, chatVisible, setPlayerMode}) {
-    const {gl } = useThree();
-
-    useEffect(() => {
-        gl.domElement.onclick = e => {
-            setChatVisible(false)
-
-            if (playground)
-                playground.localClick(e)
-        }
-        window.onkeydown = e => {
-
-            if (e.key === 't') {
-                if (!chatVisible) {
-                    e.preventDefault()
-                }
-
-                setChatVisible(true)
-            } else if (e.which === 27) { //escape key
-                setChatVisible(!chatVisible)
-
-            } else if (e.key === 'j') {
-                setPlayerMode(Const.PLAYER_MODE_CREATE)
-            } else if (e.key === 'k') {
-                setPlayerMode(Const.PLAYER_MODE_EDIT)
-            } else if (e.key === 'l') {
-                setPlayerMode(Const.PLAYER_MODE_OBJECT)
-            }
-
-            if (playground && !chatVisible)
-                playground.localKeyDown(e)
-        }
-        window.onkeyup = e => {
-            if (playground)
-                playground.localKeyUp(e)
-        }
-        gl.domElement.onmousemove = e => {
-            if (playground)
-                playground.localMouseMove(e)
-        }
-
-        gl.domElement.onwheel = event => {
-            event.preventDefault();
-            camZoom += event.deltaY * 0.01;
-            camZoom = Math.min(Math.max(.05, camZoom), 3);
-        }
-    }, [gl, playground, chatVisible])
-
-    return null
-}
-
 function Effects({ssao, bloom}) {
     const { gl, scene, camera, size } = useThree()
     const composer = useRef()
     useEffect(() => void composer.current.setSize(size.width, size.height), [size])
     useFrame(() => composer.current.render(), 1)
+
     return (
         <effectComposer ref={composer} args={[gl]}>
             <renderPass attachArray="passes" args={[scene, camera]} />
@@ -140,14 +90,87 @@ function Effects({ssao, bloom}) {
     )
 }
 
+function InputHandler({mode, setMode, playground, structures, setStructures, chatVisible, setChatVisible, activeObjectId, setActiveObjectId}) {
+    const { gl } = useThree()
+
+    useEffect(() => {
+        gl.domElement.onclick = e => {
+            switch (mode) {
+                case Const.MODE_DEFAULT:
+                    setChatVisible(false)
+
+                    if (playground)
+                        playground.localClick(e)
+                    break;
+                case Const.MODE_EXTRUDE:
+                    setMode(Const.MODE_DEFAULT)
+                    break;
+                default:
+                    break;
+            }
+        }
+        window.onkeydown = e => {
+
+            if (e.key === '9') { // tab key
+                if (!chatVisible) {
+                    e.preventDefault()
+                }
+
+                setChatVisible(!chatVisible)
+            }
+
+            if (playground && !chatVisible)
+                playground.localKeyDown(e)
+        }
+        window.onkeyup = e => {
+            if (playground)
+                playground.localKeyUp(e)
+        }
+        gl.domElement.onmousemove = e => {
+            switch (mode) {
+                case Const.MODE_DEFAULT:
+                    if (playground)
+                        playground.localMouseMove(e)
+                    break;
+                case Const.MODE_EXTRUDE:
+
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        gl.domElement.onwheel = e => {
+            switch (mode) {
+                case Const.MODE_DEFAULT:
+                    e.preventDefault()
+                    camZoom += e.deltaY * 0.01
+                    camZoom = Math.min(Math.max(.05, camZoom), 3)
+                    break;
+                case Const.MODE_EXTRUDE:
+
+                    const activeStructure = structures[activeObjectId]
+                    const newDepth = Math.max(0, activeStructure.extrusionParams.depth + e.deltaY)
+                    setStructures({ ...structures, [activeStructure.id]: { ...activeStructure, extrusionParams: { ...activeStructure.extrusionParams, depth: newDepth } }})
+                    break;
+                default:
+                    break;
+            }
+        }
+    }, [gl, playground, chatVisible, mode, activeObjectId, structures])
+
+    return null
+}
+
 function MainCanvas({player}) {
     const [players, setPlayers] = useState([])
     const [messages, setMessages] = useState([])
     const [playground, setPlayground] = useState(null)
     const [chatVisible, setChatVisible] = useState(false)
-    const [structures, setStructures] = useState([])
+    const [structures, setStructures] = useState({})
+    const [activeObjectId, setActiveObjectId] = useState(null)
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
-    const [playerMode, setPlayerMode] = useState(Const.PLAYER_MODE_CREATE)
+    const [mode, setMode] = useState(Const.MODE_DEFAULT)
 
     useEffect(() => {
         setPlayground(new Playground(player, players => setPlayers(players), messages => setMessages(messages)))
@@ -166,13 +189,16 @@ function MainCanvas({player}) {
     }
 
     const finishStructure = structure => {
-        setStructures([...structures, structure])
-        setPlayerMode(Const.PLAYER_MODE_EDIT)
+        setStructures({ ...structures, [structure.id]: structure})
+        setMode(Const.MODE_EXTRUDE)
+        setActiveObjectId(structure.id)
     }
 
-    useEffect(() => {
-        console.log("MODE: ", playerMode)
-    }, [playerMode])
+    const updateStructure = structure => {
+        setStructures({ ...structures, [structure.id]: structure })
+        setActiveObjectId(null)
+        setMode(Const.MODE_DEFAULT)
+    }
 
     return (
         <div className="main-canvas-container">
@@ -191,8 +217,18 @@ function MainCanvas({player}) {
             >
                 <Effects />
 
+                <InputHandler 
+                    mode={mode}
+                    setMode={setMode}
+                    playground={playground}
+                    structures={structures}
+                    setStructures={setStructures}
+                    chatVisible={chatVisible}
+                    setChatVisible={setChatVisible}
+                    activeObjectId={activeObjectId}
+                    setActiveObjectId={setActiveObjectId}
+                />
                 <CameraController playground={playground} />
-                <InputHandler playground={playground} setChatVisible={setChatVisible} chatVisible={chatVisible} setPlayerMode={setPlayerMode} />
 
                 <fog attach="fog" args={[0x667788, 500, 1500]} />
                 <ambientLight args={[0x666666]} />
@@ -210,23 +246,23 @@ function MainCanvas({player}) {
                     castShadow
                 />
 
-                {players.map(player => <Player key={player.id} player={player} mode={playerMode} messages={player.visibleMessages} />)}
+                {players.map(player => <Player key={player.id} player={player} mode={mode} messages={player.visibleMessages} />)}
 
-                {playerMode === Const.PLAYER_MODE_CREATE &&
+                {mode === Const.MODE_DEFAULT &&
                     <PartialStructure player={player} finishStructureFunc={finishStructure} />
                 }
 
-                {structures.map(structure => <Structure 
+                {Object.values(structures).map(structure => <Structure 
                                                 key={structure.id}
-                                                id={structure.id}
-                                                points={structure.points}
-                                                extrusionLine={structure.extrusionLine}
+                                                structure={structure}
+                                                updateStructure={updateStructure}
                                                 player={playground.getLocalPlayer()}
                                                 onPointerMove={handleMeshMouseMove}
                                                 onClick={handleMeshClick}
                                                 onPointerOut={handleMeshPointerOut}
-                                                playerMode={playerMode}
-                                                setPlayerMode={setPlayerMode}
+                                                mode={mode}
+                                                active={activeObjectId === structure.id}
+                                                setMode={setMode}
                                             />)}
 
                 <mesh receiveShadow 

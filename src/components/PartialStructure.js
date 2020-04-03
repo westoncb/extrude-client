@@ -51,7 +51,7 @@ function PartialStructure({player, finishStructureFunc}) {
                 const normal = e.face.normal.clone().applyEuler(rotation)
                 const centroid = Util.centroid(points)
                 const extrusionLine = {start: centroid, end: centroid.clone().addScaledVector(normal, 10)}
-                const structure = { id: Util.generateId(), points, extrusionLine }
+                const structure = { id: Util.generateId(), points, extrusionLine, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1} }
 
                 finishStructureFunc(structure)
                 setPoints([])
