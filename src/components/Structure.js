@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Shape, Vector2, Vector3 } from 'three'
+import { Shape, Vector2, Vector3, Quaternion, LineCurve3, ArrowHelper, CatmullRomCurve3 } from 'three'
 import { useUpdate, useFrame } from 'react-three-fiber'
 import MeshEvents from '../MeshEvents'
 import Const from '../constants'
+import Util from '../Util'
 
 const INITIAL_EXTRUSION_DEPTH = 4
 
-function Structure({structure, updateStructure, active, player, onPointerMove, onClick, onPointerOut, mode, setMode}) {
+function Structure({structure, updateStructure, active, player, onPointerMove, onClick, onPointerOut, mode, setMode, mouseTravel}) {
     const [baseShape, setBaseShape] = useState(null)
     const [overMainFace, setOverMainFace] = useState(false)
     const [dragStartPoint, setDragStartPoint] = useState(null)
     const meshRef = useRef()
 
     useEffect(() => {
+        // const centroid = Util.centroid(structure.points)
+        // const shiftedPoints = structure.points.map(p => new Vector3(p.x - centroid.x, p.y - centroid.y, p.z - centroid.z))
         setBaseShape(new Shape(structure.points.map(p => new Vector2(p.x, p.z))))
     }, [structure.points])
 
@@ -61,7 +64,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
         <>
             {baseShape &&
                 <mesh ref={meshRef} rotation-x={Math.PI/2} position-y={structure.extrusionParams.depth} castShadow receiveShadow onPointerMove={onPointerMove} onClick={onClick} onPointerOut={onPointerOut}>
-                    <extrudeBufferGeometry attach="geometry" args={[baseShape, structure.extrusionParams]} />
+                <extrudeGeometry attach="geometry" args={[baseShape, structure.extrusionParams]} />
                     
                     {showNormalMaterial &&
                         <meshPhysicalMaterial attach="material" color={0x111111} emissive={0xaa00} emissiveIntensity={1} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
@@ -77,6 +80,8 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                 </mesh>
             }
 
+            {/* <ArrowHelper/> */}
+
             {baseShape && overMainFace && mode === Const.MODE_DEFAULT &&
                 <mesh rotation-x={Math.PI / 2} position-y={structure.extrusionParams.depth + 3.1}>
                     <extrudeBufferGeometry attach="geometry" args={[baseShape, {depth: 2, bevelSize: 1, bevelThickness: 1, bevelSegments: 2}]} />
@@ -85,6 +90,28 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
             }
         </>
     )
+
+    function computeParams(params, mouseTravel) {
+        const normal = new Vector3(0, 1, 0) //cheat with y-axis for now
+        const row = ( Math.PI / 2 ) * (mouseTravel.y / 800)
+        const theta = (Math.PI / 2) * (mouseTravel.x / 800)
+        // console.log("row, theta", mouseTravel.y, mouseTravel.x)
+        const quat1 = new Quaternion()
+        const quat2 = new Quaternion()
+        const rotation = new Quaternion()
+        quat1.setFromAxisAngle(new Vector3(0, 0, -1), theta)
+        quat2.setFromAxisAngle(new Vector3(1, 0, 0), row)
+        rotation.multiplyQuaternions(quat1, quat2)
+        rotation.normalize()
+        normal.applyQuaternion(rotation)
+        const centroid = Util.centroid(structure.points)
+        centroid.y = 0
+        const endPoint = centroid.clone().addScaledVector(normal, params.depth)
+        // console.log("centroid", centroid, endPoint)
+        const line = new LineCurve3(centroid, endPoint)
+
+        return {...params, extrudePath: line}
+    }
 
     function mainPolyVertexCount(pointCount) {
         // This is something I just worked out by observing

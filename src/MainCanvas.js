@@ -25,35 +25,38 @@ const lastLookAtVec = new Vector3()
 
 let camZoom = 1
 
-const CameraController = ({playground}) => {
+const CameraController = ({playground, mode}) => {
     const { camera } = useThree()
 
     useFrame(() => {
         stats.update()
-        const positionObj = playground.getLocalPlayer().position
-        const targetObj = playground.getLocalPlayer().target
-        const position = new Vector3(positionObj.x, positionObj.y, positionObj.z)
-        const shiftedPosition = position.set(position.x, position.y + 70, position.z)
-        const target = new Vector3(targetObj.x, targetObj.y, targetObj.z)
-
-        const toTarget = target.clone().sub(shiftedPosition).normalize()
-        const extension = toTarget.clone().multiplyScalar(-200 * camZoom)
-        extension.z = Math.max(Math.abs(extension.z), 50) * Math.sign(extension.z)
-        extension.y = Math.max(extension.y, 50)
-
-        camDest.copy(position.clone().add(extension))
-
-        camLookAtDest.copy(position)
-
-
-        const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
-        camera.position.copy(camera.position.lerp(camDest, 0.005 * scale))
         
-        const newLookAt = lastLookAtVec.lerp(camLookAtDest, 0.05).clone()
-        camera.lookAt(newLookAt)
-        camera.updateProjectionMatrix()
+        if (mode === Const.MODE_DEFAULT) {
+            const positionObj = playground.getLocalPlayer().position
+            const targetObj = playground.getLocalPlayer().target
+            const position = new Vector3(positionObj.x, positionObj.y, positionObj.z)
+            const shiftedPosition = position.set(position.x, position.y + 70, position.z)
+            const target = new Vector3(targetObj.x, targetObj.y, targetObj.z)
 
-        lastLookAtVec.copy(newLookAt)
+            const toTarget = target.clone().sub(shiftedPosition).normalize()
+            const extension = toTarget.clone().multiplyScalar(-200 * camZoom)
+            extension.z = Math.max(Math.abs(extension.z), 50) * Math.sign(extension.z)
+            extension.y = Math.max(extension.y, 50)
+
+            camDest.copy(position.clone().add(extension))
+
+            camLookAtDest.copy(position)
+
+
+            const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
+            camera.position.copy(camera.position.lerp(camDest, 0.005 * scale))
+
+            const newLookAt = lastLookAtVec.lerp(camLookAtDest, 0.05).clone()
+            camera.lookAt(newLookAt)
+            camera.updateProjectionMatrix()
+
+            lastLookAtVec.copy(newLookAt)
+        }
     })
 
     return null;
@@ -90,7 +93,7 @@ function Effects({ssao, bloom}) {
     )
 }
 
-function InputHandler({mode, setMode, playground, structures, setStructures, chatVisible, setChatVisible, activeObjectId, setActiveObjectId}) {
+function InputHandler({mode, setMode, playground, structures, setStructures, chatVisible, setChatVisible, activeObjectId, setActiveObjectId, mouseTravel, setMouseTravel}) {
     const { gl } = useThree()
 
     useEffect(() => {
@@ -133,7 +136,7 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
                         playground.localMouseMove(e)
                     break;
                 case Const.MODE_EXTRUDE:
-
+                    setMouseTravel({x: mouseTravel.x + e.movementX, y: mouseTravel.y + e.movementY})
                     break;
                 default:
                     break;
@@ -157,7 +160,7 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
                     break;
             }
         }
-    }, [gl, playground, chatVisible, mode, activeObjectId, structures])
+    }, [gl, playground, chatVisible, mode, activeObjectId, structures, mouseTravel])
 
     return null
 }
@@ -169,6 +172,7 @@ function MainCanvas({player}) {
     const [chatVisible, setChatVisible] = useState(false)
     const [structures, setStructures] = useState({})
     const [activeObjectId, setActiveObjectId] = useState(null)
+    const [mouseTravel, setMouseTravel] = useState({x: 0, y:0})
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
     const [mode, setMode] = useState(Const.MODE_DEFAULT)
 
@@ -200,6 +204,7 @@ function MainCanvas({player}) {
     const updateStructure = structure => {
         setStructures({ ...structures, [structure.id]: structure })
         setActiveObjectId(null)
+        setMouseTravel({ x: 0, y: 0})
         setMode(Const.MODE_DEFAULT)
     }
 
@@ -230,8 +235,10 @@ function MainCanvas({player}) {
                     setChatVisible={setChatVisible}
                     activeObjectId={activeObjectId}
                     setActiveObjectId={setActiveObjectId}
+                    mouseTravel={mouseTravel}
+                    setMouseTravel={setMouseTravel}
                 />
-                <CameraController playground={playground} />
+                <CameraController playground={playground} mode={mode} />
 
                 <fog attach="fog" args={[0x667788, 500, 1500]} />
                 <ambientLight args={[0x666666]} />
@@ -270,6 +277,7 @@ function MainCanvas({player}) {
                                                     setMode(mode)
                                                     if (id) setActiveObjectId(id)
                                                 }}
+                                                mouseTravel={mouseTravel}
                                             />)}
 
                 <mesh receiveShadow 
