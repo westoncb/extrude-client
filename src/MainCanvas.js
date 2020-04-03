@@ -262,7 +262,10 @@ function MainCanvas({player}) {
                                                 onPointerOut={handleMeshPointerOut}
                                                 mode={mode}
                                                 active={activeObjectId === structure.id}
-                                                setMode={setMode}
+                                                setMode={(mode, id) => {
+                                                    setMode(mode)
+                                                    if (id) setActiveObjectId(id)
+                                                }}
                                             />)}
 
                 <mesh receiveShadow 

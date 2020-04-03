@@ -36,9 +36,10 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
         }
 
         const handleMeshClick = e => {
-            if (!active) {
-                if (!e.shiftKey)
-                    return
+            if (mode === Const.MODE_DEFAULT) {
+                if (e.shiftKey) {
+                    setMode(Const.MODE_EXTRUDE, structure.id)
+                }
             } else if (active && mode === Const.MODE_EXTRUDE) {
                 updateStructure(structure)
             }
@@ -51,7 +52,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                 [MeshEvents.POINTER_OUT]: handlePointerOut
             }, [meshRef.current.id])
         }
-    }, [meshRef.current, overMainFace, structure])
+    }, [meshRef.current, overMainFace, structure, mode, active])
 
     const showNormalMaterial = active && mode === Const.MODE_EXTRUDE
 
@@ -75,7 +76,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                 </mesh>
             }
 
-            {baseShape && overMainFace &&
+            {baseShape && overMainFace && mode === Const.MODE_DEFAULT &&
                 <mesh rotation-x={Math.PI / 2} position-y={structure.extrusionParams.depth + 3.1}>
                     <extrudeBufferGeometry attach="geometry" args={[baseShape, {depth: 2, bevelSize: 1, bevelThickness: 1, bevelSegments: 2}]} />
                     <meshPhysicalMaterial attach="material" color={0x0033dd} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />

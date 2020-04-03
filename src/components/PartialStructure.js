@@ -27,12 +27,14 @@ function PartialStructure({player, finishStructureFunc}) {
         }
 
         const handleMeshClick = e => {
+            if (e.shiftKey) return
+
             const vec = new Vector3(e.point.x, e.point.y, e.point.z)
 
             let finish = false
             if (points.length > 2) {
                 const snapDiffVec = vec.clone().sub(points[0])
-                if (snapDiffVec.length() < 20) {
+                if (snapDiffVec.length() < SNAP_RADIUS) {
                     vec.add(snapDiffVec)
                     finish = true
                 }
@@ -43,15 +45,18 @@ function PartialStructure({player, finishStructureFunc}) {
             setPoints([...points, vec])
 
             if (finish) {
-                const rotation = e.object.rotation.clone()
-                rotation.x *= -1
-                rotation.y *= -1
-                rotation.z *= -1
 
-                const normal = e.face.normal.clone().applyEuler(rotation)
-                const centroid = Util.centroid(points)
-                const extrusionLine = {start: centroid, end: centroid.clone().addScaledVector(normal, 10)}
-                const structure = { id: Util.generateId(), points, extrusionLine, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1} }
+                // This snippet may be useful soon
+                // const rotation = e.object.rotation.clone()
+                // rotation.x *= -1
+                // rotation.y *= -1
+                // rotation.z *= -1
+
+                // const normal = e.face.normal.clone().applyEuler(rotation)
+                // const centroid = Util.centroid(points)
+                // const extrusionLine = {start: centroid, end: centroid.clone().addScaledVector(normal, 10)}
+
+                const structure = { id: Util.generateId(), points, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1} }
 
                 finishStructureFunc(structure)
                 setPoints([])
