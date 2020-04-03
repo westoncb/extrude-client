@@ -49,7 +49,8 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
             MeshEvents.listenFor("structure_" + structure.id, {
                 [MeshEvents.MOUSE_MOVE]: handleMeshMouseMove,
                 [MeshEvents.CLICK]: handleMeshClick,
-                [MeshEvents.POINTER_OUT]: handlePointerOut
+                [MeshEvents.POINTER_OUT]: handlePointerOut,
+                [MeshEvents.POINTER_OVER]: handleMeshMouseMove
             }, [meshRef.current.id])
         }
     }, [meshRef.current, overMainFace, structure, mode, active])

@@ -187,6 +187,9 @@ function MainCanvas({player}) {
     const handleMeshPointerOut = e => {
         MeshEvents.eventOccurred(MeshEvents.POINTER_OUT, e)
     }
+    const handleMeshPointerOver = e => {
+        MeshEvents.eventOccurred(MeshEvents.POINTER_OVER, e)
+    }
 
     const finishStructure = structure => {
         setStructures({ ...structures, [structure.id]: structure})
@@ -260,6 +263,7 @@ function MainCanvas({player}) {
                                                 onPointerMove={handleMeshMouseMove}
                                                 onClick={handleMeshClick}
                                                 onPointerOut={handleMeshPointerOut}
+                                                onPointerOver={handleMeshPointerOver}
                                                 mode={mode}
                                                 active={activeObjectId === structure.id}
                                                 setMode={(mode, id) => {

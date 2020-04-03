@@ -2,6 +2,7 @@ class MeshEvents {
     static MOUSE_MOVE = 'mouse_move'
     static CLICK = 'click'
     static POINTER_OUT = 'pointer_out'
+    static POINTER_OVER = 'pointer_over'
     static eventMaps = {}
 
     static listenFor(id, eventsToHandlers, includedMeshes) {
