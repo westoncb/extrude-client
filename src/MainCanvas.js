@@ -114,10 +114,8 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
         }
         window.onkeydown = e => {
 
-            if (e.key === '9') { // tab key
-                if (!chatVisible) {
-                    e.preventDefault()
-                }
+            if (e.which === 9) { // tab key
+                e.preventDefault()
 
                 setChatVisible(!chatVisible)
             }
