@@ -1,16 +1,32 @@
 TODO:
-    Strafing
-    Decal for projected pointer
     Extrusion + snapping at 90degrees and vertices of existing objects
     Character / structure collision and response
     Material editor for created structures (possibly: change whole material when clicking face, but also allow vertex colors)
     Day/Night cycle
+
+Must be 1) within certain distance 2) able to click on surface, in order to get into extrude mode for some structure. And flying should be removed.
+This means players will have to build themselves ladders etc. in order to reach high places, using rapid creation of blocks + platformer controls.
+
+Grid Snapping:
+    - Grid is toggleable (maybe via 'G')
+    - Grid orients itself to be in same alignment as the surface your laser hits
+    - Displays automatically as long as you are within a certain distance of the surface it's on
+    - Grid resolution ajustible by shift+scroll, or hitting numbers 1 - 9 maybe
+    - If laser is snapped to some point, grid has its center vertex at that point (maybe that's how it always is: tracks cursor freely, then pinned after first click--or invisible until first click even)
+    - (Later) If on, draw mode is different: clicking fills a square, clicking a neighbording square expands boundary into it.
+    - (later) Multiple non-contiguous polys are allowed in grid mode: think about setting up the bases for series of fence posts
+
+Use tap to toggle conversation window rather than 't'/ESC
+
+Would improve the social aspect a lot of when you brought up the chat it position the camera behind your players shoulder and automatically sought ideal view points of other players, cycling between them even perhaps.
 
 Might do all face/edge/vert modifications by establishing a 'link' with the player, and then just user player movement to adjust.
 
 If you allowed people to edit edges and vertices you could make ramps/other sloped surfaces. With those + N-Game like collision detection/movement, it could be a lot of fun just building things to run around on...
 
 Subdivisions coudl just be a material modifier, or something used for destructible objects: https://threejs.org/examples/#webgl_modifier_subdivision OR https://threejs.org/examples/#webgl_modifier_tessellation
+
+** It could simplify things a lot to move the Playground instance into App and pass in things like the players and structures arrays as props to main canvas.
 
 Would be cool to allow materials like: 
  - https://threejs.org/examples/#webgl_materials_envmaps_exr
