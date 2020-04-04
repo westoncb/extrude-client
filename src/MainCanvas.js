@@ -15,6 +15,7 @@ import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import './MainCanvas.css'
 import { Vector3, MathUtils } from 'three'
+import Util from './Util'
 
 extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
 
@@ -45,17 +46,21 @@ const CameraController = ({playground, mode}) => {
 
             camDest.copy(position.clone().add(extension))
 
-            camLookAtDest.copy(position)
+            camLookAtDest.copy(target.clone().add(target.clone().sub(position).multiplyScalar(0.8)))
 
 
-            const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
-            camera.position.copy(camera.position.lerp(camDest, 0.005 * scale))
+            const positionGap = camera.position.clone().sub(camDest).length()
+            const scale = MathUtils.clamp(positionGap / 10, 0.1, 4)
+            camera.position.copy(camera.position.lerp(camDest, 0.005 * scale * Util.smoothstep(100, 115, positionGap)))
 
-            const newLookAt = lastLookAtVec.lerp(camLookAtDest, 0.05).clone()
+
+            const lookAtGap = lastLookAtVec.clone().sub(camLookAtDest).length()
+            const newLookAt = lastLookAtVec.lerp(camLookAtDest, Util.smoothstep(75, 90, lookAtGap) * 0.005).clone()
+            
             camera.lookAt(newLookAt)
-            camera.updateProjectionMatrix()
-
             lastLookAtVec.copy(newLookAt)
+            
+            camera.updateProjectionMatrix()
         }
     })
 

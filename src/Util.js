@@ -112,6 +112,18 @@ class Util {
     static generateId() {
         return "" + Math.round(Math.random() * 1000000)
     }
+
+    static step(min, max, value) {
+        if (value <= min)
+            return 0;
+        if (value >= max)
+            return 1;
+    }
+
+    static smoothstep(min, max, value) {
+        const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+        return x * x * (3 - 2 * x);
+    }
 }
 
 export default Util

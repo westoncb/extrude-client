@@ -10,7 +10,7 @@ import Util from '../Util'
 extend({ LineMaterial, LineGeometry, Line2 })
 
 const MAX_POLY_POINTS = 50
-const SNAP_RADIUS = 30
+const SNAP_RADIUS = 22
 
 function PartialStructure({player, finishStructureFunc}) {
     const [points, setPoints] = useState([])
