@@ -67,7 +67,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
         }
     }, [meshRef.current, overMainFace, structure, mode, active])
 
-    const showNormalMaterial = active && mode === Const.MODE_EXTRUDE
+    const showHighlightedMaterial = active && mode === Const.MODE_EXTRUDE
     const highlightExtrusionSurface = baseShape && overMainFace && mode === Const.MODE_DEFAULT
 
     return (
@@ -76,11 +76,11 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                 <mesh ref={meshRef} quaternion={rotationFromNormal(structure.normal)} position={position} castShadow receiveShadow onPointerMove={onPointerMove} onClick={onClick} onPointerOut={onPointerOut}>
                 <extrudeGeometry attach="geometry" args={[baseShape, structure.extrusionParams]} />
                     
-                    {showNormalMaterial &&
+                    {showHighlightedMaterial &&
                         <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x00ff00} emissiveIntensity={0.7} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
 
-                    {!showNormalMaterial &&
+                    {!showHighlightedMaterial &&
                         // Nice white
                         // <meshPhysicalMaterial attach="material" color={0xffffff} metalness={0.9} roughness={0} clearcoat clearcoatRoughness={0.25} />
 
@@ -98,7 +98,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                         <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
                     {!highlightExtrusionSurface &&
-                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} emissiveIntensity={0.05} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} emissiveIntensity={0.025} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
 
                 </mesh>
