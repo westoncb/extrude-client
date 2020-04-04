@@ -70,6 +70,8 @@ class ModelFactory {
                 var controls = self.controls;
                 self.decceleration = 1500
                 self.maxSpeed = self.walkSpeed
+                if (self.t === undefined)
+                    self.t = 100
 
                 if (!self.moveDirection)
                     self.moveDirection = new Vector3()

@@ -17,7 +17,7 @@ import Const from '../constants'
 
 const PLAYER_SPEED_SCALE = 1.75
 
-function Player({ player, messages, mode }) {
+function Player({ player, messages, mode, t }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
     const [laser, setLaser] = useState(null)
@@ -32,6 +32,14 @@ function Player({ player, messages, mode }) {
         label.innerText = player.name
         document.getElementsByClassName("App")[0].appendChild(label)
     }, [])
+
+    useEffect(() => {
+        if (md2) {
+            if (t === -1 || md2.root.position.y > 25) return
+
+            md2.t = t
+        } 
+    }, [t, md2])
 
     useEffect(() => {
         ModelFactory.getModelInstance(player.skindex).then(instance => {
@@ -88,6 +96,8 @@ function Player({ player, messages, mode }) {
             md2.controls.jump = player.keyStates[' ']
             md2.controls.attack = player.keyStates['f']
             md2.update(delta * PLAYER_SPEED_SCALE)
+            md2.t += delta * PLAYER_SPEED_SCALE
+            md2.root.position.y = Math.max(24.25, 24.25 + md2.t ** 2 * -18.369 * 15 + md2.t * 17.209 * 15)
             player.position.x = md2.root.position.x
             player.position.y = md2.root.position.y
             player.position.z = md2.root.position.z

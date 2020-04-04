@@ -98,7 +98,7 @@ function Effects({ssao, bloom}) {
     )
 }
 
-function InputHandler({mode, setMode, playground, structures, setStructures, chatVisible, setChatVisible, activeObjectId, setActiveObjectId, mouseTravel, setMouseTravel}) {
+function InputHandler({mode, setMode, playground, structures, setStructures, chatVisible, setChatVisible, setT, activeObjectId, setActiveObjectId, mouseTravel, setMouseTravel}) {
     const { gl, size } = useThree()
 
     useEffect(() => {
@@ -127,6 +127,11 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
 
             if (playground && !chatVisible)
                 playground.localKeyDown(e)
+
+            if (e.key === ' ') {
+                setT(0)
+                setT(-1)
+            }
         }
         window.onkeyup = e => {
             if (playground)
@@ -177,6 +182,7 @@ function MainCanvas({player}) {
     const [structures, setStructures] = useState({})
     const [activeObjectId, setActiveObjectId] = useState(null)
     const [mouseTravel, setMouseTravel] = useState({x: 0, y:0})
+    const [t, setT] = useState(100)
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
     const [mode, setMode] = useState(Const.MODE_DEFAULT)
 
@@ -252,6 +258,7 @@ function MainCanvas({player}) {
                     setActiveObjectId={setActiveObjectId}
                     mouseTravel={mouseTravel}
                     setMouseTravel={setMouseTravel}
+                    setT={setT}
                 />
                 <CameraController playground={playground} mode={mode} />
 
@@ -271,7 +278,7 @@ function MainCanvas({player}) {
                     castShadow
                 />
 
-                {players.map(player => <Player key={player.id} player={player} mode={mode} messages={player.visibleMessages} />)}
+                {players.map(player => <Player key={player.id} t={t} player={player} mode={mode} messages={player.visibleMessages} />)}
 
                 {mode === Const.MODE_DEFAULT &&
                     <PartialStructure player={player} finishStructureFunc={finishStructure} />
