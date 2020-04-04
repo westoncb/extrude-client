@@ -13,16 +13,17 @@ const TARGET_UPDATE_THROTTLE = 1000
 class Playground {
     localPlayerId
     socket = null
-    state = {players: {}}
+    state = {players: {}, structures: {}}
     messages = []
 
     static RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
     static KEY_TO_DIRECTION = { a: 'left', w: "up", s: "down", d: "right"}
 
-    constructor(player, updatePlayers, updateMessagesFunc) {
+    constructor(player, updatePlayers, updateStructuresFunc, updateMessagesFunc) {
         this.localPlayerId = player.id
         this.updatePlayers = updatePlayers
         this.updateMessagesFunc = updateMessagesFunc
+        this.updateStructuresFunc = updateStructuresFunc
         this.state.players[player.id] = player
 
         this.connectToServer(player)
@@ -80,6 +81,7 @@ class Playground {
             case "full_state_update":
                 this.state = event.state
                 this.updatePlayers(this.getPlayersArray())
+                this.updateStructuresFunc(this.state.structures)
                 break;
             case "input_key_down":
                 this.serverKeyDown(event)
@@ -126,6 +128,13 @@ class Playground {
                 this.state.players[event.player.id] = event.player
                 this.updatePlayers(Object.values(this.state.players))
                 break;
+            case "structures_sync":
+                if (event.playerId === this.localPlayerId)
+                    break
+
+                this.state.structures = {...this.state.structures, ...event.structures}
+                this.updateStructuresFunc(this.state.structures)
+                break;
             default:
                 console.log("unrecognized server event: ", event)
                 break;
@@ -134,6 +143,11 @@ class Playground {
 
     getPlayersArray() {
         return Object.keys(this.state.players).map(key => this.state.players[key])
+    }
+
+    updateStructuresFromLocal(structures) {
+        this.state.structures = {...this.state.structures, ...structures}
+        this.socket.emit("event", {type: "structures_sync", structures: this.state.structures, playerId: this.localPlayerId })
     }
 
     /////

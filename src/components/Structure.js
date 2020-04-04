@@ -11,12 +11,12 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
     const [baseShape, setBaseShape] = useState(null)
     const [overMainFace, setOverMainFace] = useState(false)
     const [dragStartPoint, setDragStartPoint] = useState(null)
-    const [position, setPosition] = useState(new Vector3)
+    const [position, setPosition] = useState(new Vector3())
     const meshRef = useRef()
 
     useEffect(() => {
         const centroid = Util.centroid(structure.points)
-        const normal = structure.normal
+        const normal = new Vector3().copy(structure.normal)
         const dest = new Vector3(0, 0, 1)
         const quat = new Quaternion()
         quat.setFromUnitVectors(normal, dest)

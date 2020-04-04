@@ -176,7 +176,7 @@ function MainCanvas({player}) {
     const [mode, setMode] = useState(Const.MODE_DEFAULT)
 
     useEffect(() => {
-        setPlayground(new Playground(player, players => setPlayers(players), messages => setMessages(messages)))
+        setPlayground(new Playground(player, players => setPlayers(players), structures => setStructures(structures), messages => setMessages(messages)))
     }, [player])
 
     const handleMeshMouseMove = e => {
@@ -202,16 +202,20 @@ function MainCanvas({player}) {
     }
 
     const finishStructure = structure => {
-        setStructures({ ...structures, [structure.id]: structure})
+        const newStructures = { ...structures, [structure.id]: structure }
+        setStructures(newStructures)
         setMode(Const.MODE_EXTRUDE)
         setActiveObjectId(structure.id)
+        playground.updateStructuresFromLocal(newStructures)
     }
 
     const updateStructure = structure => {
-        setStructures({ ...structures, [structure.id]: structure })
+        const newStructures = { ...structures, [structure.id]: structure }
+        setStructures(newStructures)
         setActiveObjectId(null)
         setMouseTravel({ x: 0, y: 0})
         setMode(Const.MODE_DEFAULT)
+        playground.updateStructuresFromLocal(newStructures)
     }
 
     return (
