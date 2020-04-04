@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Shape, Vector2, Vector3, Quaternion, LineCurve3, ArrowHelper, CatmullRomCurve3, Object3D } from 'three'
+import { Shape, Vector2, Vector3, Quaternion, LineCurve3, Euler } from 'three'
 import { useUpdate, useFrame } from 'react-three-fiber'
 import MeshEvents from '../MeshEvents'
 import Const from '../constants'
@@ -90,7 +90,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                 </mesh>
             }
 
-            {baseShape && mode !== Const.MODE_EXTRUDE &&    
+            {baseShape && mode !== Const.MODE_EXTRUDE &&
                 <mesh quaternion={rotationFromNormal(structure.normal)} position={getIndicatorPosition(position, structure.normal, structure.extrusionParams.depth)}>
                     <extrudeBufferGeometry attach="geometry" args={[baseShape, { depth: 1, bevelSize: 1, bevelThickness: 1, bevelSegments: 2 }]} />
 
@@ -117,35 +117,40 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
         return quat
     }
 
-    function calcPosition(normal, depth) {
+    function calcPosition(position, normal, depth) {
         const rotation = rotationFromNormal(normal)
         const axis = new Vector3(0, 0, 1)
         axis.applyQuaternion(rotation).normalize()
 
-        const transformed = axis.multiplyScalar(depth/2)
-        console.log("axis", transformed)
+        const transformed = axis.multiplyScalar(depth)
+        // console.log("axis", transformed)
 
-        return transformed
+        return position
     }
 
+    // Maybe refer to this example: https://github.com/defmech/Three.js-Object-Rotation-with-Quaternion
+    // But I expect the issue here has to do with how extrusion geometry works... not sure.
     function computeParams(params, mouseTravel) {
-        const normal = new Vector3(0, 1, 0) //cheat with y-axis for now
-        const row = ( Math.PI / 2 ) * (mouseTravel.y / 800)
-        const theta = (Math.PI / 2) * (mouseTravel.x / 800)
-        // console.log("row, theta", mouseTravel.y, mouseTravel.x)
+        // It's always positive z-axis since we're using the normal of
+        // the 2d Shape (which uses x,y coords)
+        const normal = new Vector3(0, 0, 1)
+
+        const row = ( Math.PI / 2 ) * (mouseTravel.x / 1000)
+        const theta = ( Math.PI / 2 ) * (mouseTravel.y / 100)  
+        
         const quat1 = new Quaternion()
         const quat2 = new Quaternion()
         const rotation = new Quaternion()
-        quat1.setFromAxisAngle(new Vector3(0, 0, -1), theta)
-        quat2.setFromAxisAngle(new Vector3(1, 0, 0), row)
-        rotation.multiplyQuaternions(quat1, quat2)
-        rotation.normalize()
-        normal.applyQuaternion(rotation)
-        const centroid = Util.centroid(structure.points)
-        centroid.y = 0
-        const endPoint = centroid.clone().addScaledVector(normal, params.depth)
-        // console.log("centroid", centroid, endPoint)
-        const line = new LineCurve3(centroid, endPoint)
+        // quat1.setFromAxisAngle(new Vector3(0, 1, 0), theta)
+        // quat2.setFromAxisAngle(new Vector3(1, 0, 0), row)
+        quat1.setFromEuler(new Euler(row, theta, 0, "XYZ"))
+        // rotation.multiplyQuaternions(rotation, quat1)
+        // rotation.multiplyQuaternions(rotation, quat2)
+        // const result = rotation.multiply(quat1)
+        normal.applyQuaternion(quat1)
+        const startPoint = new Vector3()
+        const endPoint = startPoint.clone().addScaledVector(normal, params.depth)
+        const line = new LineCurve3(startPoint, endPoint)
 
         return {...params, extrudePath: line}
     }
