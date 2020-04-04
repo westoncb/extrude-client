@@ -26,7 +26,7 @@ const lastLookAtVec = new Vector3()
 let camZoom = 1
 
 const CameraController = ({playground, mode}) => {
-    const { camera } = useThree()
+    const { camera, scene } = useThree()
 
     useFrame(() => {
         stats.update()
@@ -94,7 +94,7 @@ function Effects({ssao, bloom}) {
 }
 
 function InputHandler({mode, setMode, playground, structures, setStructures, chatVisible, setChatVisible, activeObjectId, setActiveObjectId, mouseTravel, setMouseTravel}) {
-    const { gl } = useThree()
+    const { gl, size } = useThree()
 
     useEffect(() => {
         gl.domElement.onclick = e => {
@@ -130,6 +130,7 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
                 playground.localKeyUp(e)
         }
         gl.domElement.onmousemove = e => {
+
             switch (mode) {
                 case Const.MODE_DEFAULT:
                     if (playground)
@@ -181,11 +182,18 @@ function MainCanvas({player}) {
     }, [player])
 
     const handleMeshMouseMove = e => {
+
+        // Required so reac-three-fiber only processes the nearest mesh
+        e.stopPropagation()
+
+        // It's an issue that these are out of sync...
         playground.getLocalPlayer().target = e.point
         player.target = e.point
         MeshEvents.eventOccurred(MeshEvents.MOUSE_MOVE, e)
     }
     const handleMeshClick = e => {
+        e.stopPropagation()
+
         MeshEvents.eventOccurred(MeshEvents.CLICK, e)
     }
     const handleMeshPointerOut = e => {

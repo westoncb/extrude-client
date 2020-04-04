@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Shape, Vector2, Vector3, Quaternion, LineCurve3, ArrowHelper, CatmullRomCurve3 } from 'three'
+import { Shape, Vector2, Vector3, Quaternion, LineCurve3, ArrowHelper, CatmullRomCurve3, Object3D } from 'three'
 import { useUpdate, useFrame } from 'react-three-fiber'
 import MeshEvents from '../MeshEvents'
 import Const from '../constants'
@@ -11,18 +11,27 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
     const [baseShape, setBaseShape] = useState(null)
     const [overMainFace, setOverMainFace] = useState(false)
     const [dragStartPoint, setDragStartPoint] = useState(null)
+    const [position, setPosition] = useState(new Vector3)
     const meshRef = useRef()
 
     useEffect(() => {
-        // const centroid = Util.centroid(structure.points)
-        // const shiftedPoints = structure.points.map(p => new Vector3(p.x - centroid.x, p.y - centroid.y, p.z - centroid.z))
-        setBaseShape(new Shape(structure.points.map(p => new Vector2(p.x, p.z))))
+        const centroid = Util.centroid(structure.points)
+        const normal = structure.normal
+        const dest = new Vector3(0, 0, 1)
+        const quat = new Quaternion()
+        quat.setFromUnitVectors(normal, dest)
+        const shiftedPoints = structure.points.map(p => new Vector3(p.x - centroid.x, p.y - centroid.y, p.z - centroid.z))
+        const rotatedPoints = shiftedPoints.map(p => p.clone().applyQuaternion(quat))
+        setBaseShape(new Shape(rotatedPoints.map(p => new Vector2(p.x, p.y))))
+        setPosition(centroid)
     }, [structure.points])
 
     useEffect(() => {
         const handleMeshMouseMove = e => {
-            if (!e.shiftKey)
+            if (!e.shiftKey) {
+                setOverMainFace(false)
                 return
+            }
 
             // faces have three verts a, b, c.
             // We use the first arbitrarily
@@ -59,15 +68,16 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
     }, [meshRef.current, overMainFace, structure, mode, active])
 
     const showNormalMaterial = active && mode === Const.MODE_EXTRUDE
+    const highlightExtrusionSurface = baseShape && overMainFace && mode === Const.MODE_DEFAULT
 
     return (
         <>
             {baseShape &&
-                <mesh ref={meshRef} rotation-x={Math.PI/2} position-y={structure.extrusionParams.depth} castShadow receiveShadow onPointerMove={onPointerMove} onClick={onClick} onPointerOut={onPointerOut}>
+                <mesh ref={meshRef} quaternion={rotationFromNormal(structure.normal)} position={position} castShadow receiveShadow onPointerMove={onPointerMove} onClick={onClick} onPointerOut={onPointerOut}>
                 <extrudeGeometry attach="geometry" args={[baseShape, structure.extrusionParams]} />
                     
                     {showNormalMaterial &&
-                        <meshPhysicalMaterial attach="material" color={0x111111} emissive={0xaa00} emissiveIntensity={1} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x00ff00} emissiveIntensity={0.7} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
 
                     {!showNormalMaterial &&
@@ -80,16 +90,43 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                 </mesh>
             }
 
-            {/* <ArrowHelper/> */}
+            {baseShape && mode !== Const.MODE_EXTRUDE &&    
+                <mesh quaternion={rotationFromNormal(structure.normal)} position={getIndicatorPosition(position, structure.normal, structure.extrusionParams.depth)}>
+                    <extrudeBufferGeometry attach="geometry" args={[baseShape, { depth: 1, bevelSize: 1, bevelThickness: 1, bevelSegments: 2 }]} />
 
-            {baseShape && overMainFace && mode === Const.MODE_DEFAULT &&
-                <mesh rotation-x={Math.PI / 2} position-y={structure.extrusionParams.depth + 3.1}>
-                    <extrudeBufferGeometry attach="geometry" args={[baseShape, {depth: 2, bevelSize: 1, bevelThickness: 1, bevelSegments: 2}]} />
-                    <meshPhysicalMaterial attach="material" color={0x0033dd} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                    {highlightExtrusionSurface &&
+                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                    }
+                    {!highlightExtrusionSurface &&
+                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} emissiveIntensity={0.05} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                    }
+
                 </mesh>
             }
         </>
     )
+
+    function getIndicatorPosition(position, normal, depth) {
+        return position.clone().addScaledVector(normal, depth + 1.5)
+    }
+
+    function rotationFromNormal(normal) {
+        const quat = new Quaternion()
+        quat.setFromUnitVectors(new Vector3(0, 0, 1), normal)
+
+        return quat
+    }
+
+    function calcPosition(normal, depth) {
+        const rotation = rotationFromNormal(normal)
+        const axis = new Vector3(0, 0, 1)
+        axis.applyQuaternion(rotation).normalize()
+
+        const transformed = axis.multiplyScalar(depth/2)
+        console.log("axis", transformed)
+
+        return transformed
+    }
 
     function computeParams(params, mouseTravel) {
         const normal = new Vector3(0, 1, 0) //cheat with y-axis for now
