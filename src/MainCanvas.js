@@ -284,7 +284,7 @@ function MainCanvas({player}) {
                     <PartialStructure player={player} finishStructureFunc={finishStructure} />
                 }
 
-                {Object.values(structures).map(structure => <Structure 
+                {Object.values(structures || {}).map(structure => <Structure 
                                                 key={structure.id}
                                                 structure={structure}
                                                 updateStructure={updateStructure}
