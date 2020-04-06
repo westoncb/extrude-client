@@ -149,7 +149,7 @@ function executeAction(action, socketRef, state, dispatch, throttledEmit) {
             break;
         case "update_player_target":
             dispatch({ type: "update_player_target", playerId: localPlayerId, target: action.target })
-            // throttledEmit({ type: "player_target_change", playerId: localPlayerId, target: action.target })
+            throttledEmit({ type: "player_target_change", playerId: localPlayerId, target: action.target })
             break;
         case "send_chat_message":
             socket.emit("event", { type: "chat_message", message: action.message, playerId: localPlayerId, time: new Date() })

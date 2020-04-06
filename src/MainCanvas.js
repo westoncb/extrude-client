@@ -271,7 +271,7 @@ function MainCanvas({playerInfo}) {
                     castShadow
                 />
 
-                {Object.values(state.players).map(player => <Player key={player.id} t={t} player={player} />)}
+                {Object.values(state.players).map(player => <Player key={player.id} t={t} player={player} isLocalPlayer={player.id === localPlayer.id} />)}
 
                 {mode === Const.MODE_DEFAULT &&
                     <PartialStructure player={localPlayer} finishStructureFunc={finishStructure} />

@@ -17,7 +17,7 @@ import Const from '../constants'
 
 const PLAYER_SPEED_SCALE = 1.75
 
-function Player({ player, t }) {
+function Player({ player, isLocalPlayer, t }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
     const [laser, setLaser] = useState(null)
@@ -38,8 +38,12 @@ function Player({ player, t }) {
             if (t === -1 || md2.root.position.y > 25) return
 
             md2.t = t
+
+            if (!isLocalPlayer) {
+                md2.root.position.copy(player.position)
+            }
         } 
-    }, [t, md2])
+    }, [t, md2, player])
 
     useEffect(() => {
         ModelFactory.getModelInstance(player.skindex).then(instance => {
