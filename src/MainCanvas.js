@@ -16,6 +16,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import './MainCanvas.css'
 import { Vector3, MathUtils } from 'three'
 import Util from './Util'
+import mousePos from './global'
 
 extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
 
@@ -134,6 +135,9 @@ function InputHandler({mode, setMode, execute, structures, chatVisible, setChatV
             execute("key_up", { ...e, which: e.which, key: e.key})
         }
         gl.domElement.onmousemove = e => {
+
+            mousePos.x = e.clientX
+            mousePos.y = e.clientY
 
             switch (mode) {
                 case Const.MODE_DEFAULT:

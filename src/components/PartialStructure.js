@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { Vector3 } from 'three'
+import { Vector3, Vector2 } from 'three'
 import { extend, useThree, useUpdate } from "react-three-fiber"
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
@@ -7,6 +7,7 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 import MeshEvents from '../MeshEvents'
 import Util from '../Util'
 import TangentGrid from './TangentGrid'
+import mousePos from '../global'
 
 extend({ LineMaterial, LineGeometry, Line2 })
 
@@ -17,7 +18,7 @@ function PartialStructure({player, finishStructureFunc}) {
     const [points, setPoints] = useState([])
     const [cursorPoint, setCursorPoint] = useState(null)
     const [inSnapRange, setInSnapRange] = useState(false)
-    const [gridConfig, setGridConfig] = useState({position: new Vector3(), orientation: new Vector3()})
+    const [gridConfig, setGridConfig] = useState({position: new Vector3(), orientation: new Vector3(), mouse: new Vector2()})
     const { size } = useThree()
 
     const visible = points.length > 0
@@ -31,7 +32,28 @@ function PartialStructure({player, finishStructureFunc}) {
                 const rotation = e.object.rotation.clone()
                 const normal = e.face.normal.clone().applyEuler(rotation)
 
-                setGridConfig({...gridConfig, position: e.point.clone().addScaledVector(normal, 0.1), orientation: normal})
+                const relativeTarget = e.point.clone().sub(points[0])
+                const u = relativeTarget.normalize()
+                const v = normal.clone().cross(u)
+
+                let x = u.clone().multiplyScalar(u.dot(e.point))
+                let y = v.clone().multiplyScalar(v.dot(e.point))
+                const target2d = new Vector2(x.length(), y.length())
+
+                x = u.clone().multiplyScalar(u.dot(points[0]))
+                y = v.clone().multiplyScalar(v.dot(points[0]))
+                const firstPoint2d = new Vector2(x.length(), y.length())
+
+                if (points.length > 0) {
+                    setGridConfig({
+                        ...gridConfig,
+                        position: points[0].clone().addScaledVector(normal, 0.1),
+                        orientation: normal,
+                        target: e.point,
+                        anchorShift: target2d.clone().sub(firstPoint2d),
+                        mouse: new Vector2(mousePos.x, mousePos.y)
+                    })
+                }
             }
         }
 
@@ -139,7 +161,12 @@ function PartialStructure({player, finishStructureFunc}) {
             ))}
 
             {visible &&
-                <TangentGrid position={gridConfig.position} orientation={gridConfig.orientation}></TangentGrid>
+                <TangentGrid
+                    position={gridConfig.position}
+                    orientation={gridConfig.orientation}
+                    target={gridConfig.target}
+                    mouse={gridConfig.mouse}
+                />
             }
         </>
     )
