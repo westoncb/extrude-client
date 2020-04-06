@@ -6,6 +6,7 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 import MeshEvents from '../MeshEvents'
 import Util from '../Util'
+import TangentGrid from './TangentGrid'
 
 extend({ LineMaterial, LineGeometry, Line2 })
 
@@ -16,13 +17,21 @@ function PartialStructure({player, finishStructureFunc}) {
     const [points, setPoints] = useState([])
     const [cursorPoint, setCursorPoint] = useState(null)
     const [inSnapRange, setInSnapRange] = useState(false)
+    const [gridConfig, setGridConfig] = useState({position: new Vector3(), orientation: new Vector3()})
     const { size } = useThree()
+
+    const visible = points.length > 0
 
     useEffect(() => {
         const handleMeshMouseMove = e => {
-            if (points.length > 0) {
+            if (visible) {
                 const vec = new Vector3(e.point.x, e.point.y, e.point.z)
                 setCursorPoint(vec)
+
+                const rotation = e.object.rotation.clone()
+                const normal = e.face.normal.clone().applyEuler(rotation)
+
+                setGridConfig({...gridConfig, position: e.point.clone().addScaledVector(normal, 0.1), orientation: normal})
             }
         }
 
@@ -128,6 +137,10 @@ function PartialStructure({player, finishStructureFunc}) {
                     <meshPhysicalMaterial attach="material" color={(i === 0 && inSnapRange) ? 0x00ff00 : 0x117700} clearcoat metalness={0.25} clearcoatRoughness={0.75} roughness={0.1}/>
                 </mesh>
             ))}
+
+            {visible &&
+                <TangentGrid position={gridConfig.position} orientation={gridConfig.orientation}></TangentGrid>
+            }
         </>
     )
 }
