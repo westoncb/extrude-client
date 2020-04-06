@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {useThree, useFrame} from 'react-three-fiber'
 import Util from '../Util'
 import { Vector3 } from 'three'
 
 function useDOM(domSelectors, sceneNames) {
     const {scene, size, camera} = useThree()
-    const [nodeMap, setNodeMap] = useState(null)
 
     useFrame(() => {
 
@@ -40,16 +39,4 @@ function useDOM(domSelectors, sceneNames) {
     })
 }
 
-function useTest() {
-    const [a, setA] = useState("a")
-
-    useEffect(() => {
-        setTimeout(() => {
-            setA("B")
-        }, 1000)
-    }, [])
-
-    return [a, setA]
-}
-
-export {useDOM, useTest}
+export {useDOM}
