@@ -54,7 +54,7 @@ function PartialStructure({player, finishStructureFunc}) {
                 // const centroid = Util.centroid(points)
                 // const extrusionLine = {start: centroid, end: centroid.clone().addScaledVector(normal, 10)}
 
-                const structure = { id: Util.generateId(), points, normal, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1} }
+                const structure = { id: Util.generateId(), owner: player.id, points, normal, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1} }
 
                 finishStructureFunc(structure)
                 setPoints([])

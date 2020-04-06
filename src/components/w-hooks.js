@@ -40,4 +40,16 @@ function useDOM(domSelectors, sceneNames) {
     })
 }
 
-export {useDOM}
+function useTest() {
+    const [a, setA] = useState("a")
+
+    useEffect(() => {
+        setTimeout(() => {
+            setA("B")
+        }, 1000)
+    }, [])
+
+    return [a, setA]
+}
+
+export {useDOM, useTest}

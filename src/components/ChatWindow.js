@@ -2,13 +2,13 @@ import React, {useState, useRef, useEffect} from 'react'
 import './ChatWindow.css'
 import {InputGroup} from '@blueprintjs/core'
 
-function ChatWindow({sendChatMessage, messages, hideChat}) {
+function ChatWindow({sendChatMessage, localPlayer, players, messages, hideChat}) {
     const [inputText, setInputText] = useState("")
     const allMessagesRef = useRef()
 
     const handleKeyDown = e => {
         if (e.which === 13) { //check for 'enter' press
-            sendChatMessage(inputText)
+            sendChatMessage({ message: inputText, playerId: localPlayer.id, time: new Date()})
             setInputText("")
         } else if (e.which === 27) { //escape key
             hideChat()
@@ -24,7 +24,7 @@ function ChatWindow({sendChatMessage, messages, hideChat}) {
             <div className="all-messages" ref={allMessagesRef}>
                 {messages.map(message => (
                     <div className="chat-message" key={message.time}>
-                        <div className="chat-message-name">{message.player.name}:</div>
+                        <div className="chat-message-name">{players[message.playerId].name}:</div>
                         <div className="chat-message-content">{message.message}</div>
                     </div>
                 ))}

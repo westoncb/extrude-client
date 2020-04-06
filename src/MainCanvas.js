@@ -2,7 +2,7 @@ import React, {useMemo, useEffect, useState, useRef} from 'react'
 import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { Canvas, extend, useThree, useFrame } from 'react-three-fiber'
-import Playground from './playground'
+import usePlayground from './playground'
 import Const from './constants'
 import MeshEvents from './MeshEvents'
 import Player from './components/Player'
@@ -26,15 +26,15 @@ const lastLookAtVec = new Vector3()
 
 let camZoom = 1
 
-const CameraController = ({playground, mode}) => {
+const CameraController = ({localPlayer, mode}) => {
     const { camera, scene } = useThree()
 
     useFrame(() => {
         stats.update()
         
         if (mode === Const.MODE_DEFAULT) {
-            const positionObj = playground.getLocalPlayer().position
-            const targetObj = playground.getLocalPlayer().target
+            const positionObj = localPlayer.position
+            const targetObj = localPlayer.target
             const position = new Vector3(positionObj.x, positionObj.y, positionObj.z)
             const shiftedPosition = position.set(position.x, position.y + 70, position.z)
             const target = new Vector3(targetObj.x, targetObj.y, targetObj.z)
@@ -98,7 +98,7 @@ function Effects({ssao, bloom}) {
     )
 }
 
-function InputHandler({mode, setMode, playground, structures, setStructures, chatVisible, setChatVisible, setT, activeObjectId, setActiveObjectId, mouseTravel, setMouseTravel}) {
+function InputHandler({mode, setMode, execute, structures, chatVisible, setChatVisible, setT, activeObjectId, setActiveObjectId, mouseTravel, setMouseTravel}) {
     const { gl, size } = useThree()
 
     useEffect(() => {
@@ -107,8 +107,6 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
                 case Const.MODE_DEFAULT:
                     setChatVisible(false)
 
-                    if (playground)
-                        playground.localClick(e)
                     break;
                 case Const.MODE_EXTRUDE:
                     setMode(Const.MODE_DEFAULT)
@@ -125,8 +123,7 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
                 setChatVisible(!chatVisible)
             }
 
-            if (playground && !chatVisible)
-                playground.localKeyDown(e)
+            execute("key_down", {...e, which: e.which, key: e.key})
 
             if (e.key === ' ') {
                 setT(0)
@@ -134,15 +131,13 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
             }
         }
         window.onkeyup = e => {
-            if (playground)
-                playground.localKeyUp(e)
+            execute("key_up", { ...e, which: e.which, key: e.key})
         }
         gl.domElement.onmousemove = e => {
 
             switch (mode) {
                 case Const.MODE_DEFAULT:
-                    if (playground)
-                        playground.localMouseMove(e)
+
                     break;
                 case Const.MODE_EXTRUDE:
                     setMouseTravel({x: mouseTravel.x + e.movementX, y: mouseTravel.y + e.movementY})
@@ -163,41 +158,39 @@ function InputHandler({mode, setMode, playground, structures, setStructures, cha
 
                     const activeStructure = structures[activeObjectId]
                     const newDepth = Math.max(0, activeStructure.extrusionParams.depth + e.deltaY)
-                    setStructures({ ...structures, [activeStructure.id]: { ...activeStructure, extrusionParams: { ...activeStructure.extrusionParams, depth: newDepth } }})
+                    const updatedStructure = { ...activeStructure, extrusionParams: { ...activeStructure.extrusionParams, depth: newDepth } }
+                    execute("update_structure", { structure: updatedStructure})
                     break;
                 default:
                     break;
             }
         }
-    }, [gl, playground, chatVisible, mode, activeObjectId, structures, mouseTravel])
+    }, [gl, chatVisible, mode, activeObjectId, structures, mouseTravel])
 
     return null
 }
 
-function MainCanvas({player}) {
-    const [players, setPlayers] = useState([])
-    const [messages, setMessages] = useState([])
-    const [playground, setPlayground] = useState(null)
+function MainCanvas({playerInfo}) {
     const [chatVisible, setChatVisible] = useState(false)
-    const [structures, setStructures] = useState({})
     const [activeObjectId, setActiveObjectId] = useState(null)
     const [mouseTravel, setMouseTravel] = useState({x: 0, y:0})
     const [t, setT] = useState(100)
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
     const [mode, setMode] = useState(Const.MODE_DEFAULT)
+    const {execute, state} = usePlayground()
+    const localPlayer = state.players[state.localPlayerId]
 
     useEffect(() => {
-        setPlayground(new Playground(player, players => setPlayers(players), structures => setStructures(structures), messages => setMessages(messages)))
-    }, [player])
+        execute("initialize", {player: playerInfo})
+        console.log("executed initialize!")
+    }, [playerInfo])
 
     const handleMeshMouseMove = e => {
 
         // Required so reac-three-fiber only processes the nearest mesh
         e.stopPropagation()
 
-        // It's an issue that these are out of sync...
-        playground.getLocalPlayer().target = e.point
-        player.target = e.point
+        execute("update_player_target", {target: e.point, playerId: localPlayer.id})
         MeshEvents.eventOccurred(MeshEvents.MOUSE_MOVE, e)
     }
     const handleMeshClick = e => {
@@ -213,20 +206,21 @@ function MainCanvas({player}) {
     }
 
     const finishStructure = structure => {
-        const newStructures = { ...structures, [structure.id]: structure }
-        setStructures(newStructures)
+        execute("update_structure", {structure})
         setMode(Const.MODE_EXTRUDE)
         setActiveObjectId(structure.id)
-        playground.updateStructuresFromLocal(newStructures)
     }
 
     const updateStructure = structure => {
-        const newStructures = { ...structures, [structure.id]: structure }
-        setStructures(newStructures)
+        console.log("calling update structure", structure)
+        execute("update_structure", {structure})
         setActiveObjectId(null)
         setMouseTravel({ x: 0, y: 0})
         setMode(Const.MODE_DEFAULT)
-        playground.updateStructuresFromLocal(newStructures)
+    }
+
+    const getMessages = state => {
+        return Object.values(state.players || {}).reduce((messages, player) => messages = messages.concat(player.visibleMessages), [])
     }
 
     return (
@@ -249,9 +243,8 @@ function MainCanvas({player}) {
                 <InputHandler 
                     mode={mode}
                     setMode={setMode}
-                    playground={playground}
-                    structures={structures}
-                    setStructures={setStructures}
+                    execute={execute}
+                    structures={state.structures}
                     chatVisible={chatVisible}
                     setChatVisible={setChatVisible}
                     activeObjectId={activeObjectId}
@@ -260,7 +253,7 @@ function MainCanvas({player}) {
                     setMouseTravel={setMouseTravel}
                     setT={setT}
                 />
-                <CameraController playground={playground} mode={mode} />
+                <CameraController localPlayer={localPlayer} mode={mode} />
 
                 <fog attach="fog" args={[0x667788, 500, 1500]} />
                 <ambientLight args={[0x666666]} />
@@ -278,17 +271,17 @@ function MainCanvas({player}) {
                     castShadow
                 />
 
-                {players.map(player => <Player key={player.id} t={t} player={player} mode={mode} messages={player.visibleMessages} />)}
+                {Object.values(state.players).map(player => <Player key={player.id} t={t} player={player} />)}
 
                 {mode === Const.MODE_DEFAULT &&
-                    <PartialStructure player={player} finishStructureFunc={finishStructure} />
+                    <PartialStructure player={localPlayer} finishStructureFunc={finishStructure} />
                 }
 
-                {Object.values(structures || {}).map(structure => <Structure 
+                {Object.values(state.structures).map(structure => <Structure 
                                                 key={structure.id}
                                                 structure={structure}
                                                 updateStructure={updateStructure}
-                                                player={playground.getLocalPlayer()}
+                                                player={localPlayer}
                                                 onPointerMove={handleMeshMouseMove}
                                                 onClick={handleMeshClick}
                                                 onPointerOut={handleMeshPointerOut}
@@ -313,8 +306,8 @@ function MainCanvas({player}) {
                     </meshStandardMaterial>
                 </mesh>
             </Canvas>
-            {playground && chatVisible &&
-                <ChatWindow sendChatMessage={playground.sendChatMessage.bind(playground)} messages={messages} hideChat={() => setChatVisible(false)}/>
+            {chatVisible &&
+                <ChatWindow players={state.players} sendChatMessage={message => execute("send_chat_message", message)} localPlayer={localPlayer} messages={getMessages(state)} hideChat={() => setChatVisible(false)}/>
             }
         </div>
     )

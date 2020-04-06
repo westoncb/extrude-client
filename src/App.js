@@ -24,7 +24,7 @@ function App() {
     <div className="App bp3-dark">
 
         {player &&
-          <MainCanvas player={player}/>
+          <MainCanvas playerInfo={player}/>
         }
 
         <div className="screen-container">

@@ -17,7 +17,7 @@ import Const from '../constants'
 
 const PLAYER_SPEED_SCALE = 1.75
 
-function Player({ player, messages, mode, t }) {
+function Player({ player, t }) {
     const [md2, setMd2] = useState(null)
     const [height, setHeight] = useState(0)
     const [laser, setLaser] = useState(null)
@@ -127,7 +127,7 @@ function Player({ player, messages, mode, t }) {
                         </mesh> */}
                     </primitive>
 
-                    {messages.map((message, i) => (
+                    {player.visibleMessages.map((message, i) => (
                         <Dom key={message.time} center position={[player.position.x, player.position.y + height/1.5, player.position.z]}>
                             <div style={{transform: `translateY(${-i*2.1}rem)`}} className="speech-bubble">{message.message}</div>
                         </Dom>
