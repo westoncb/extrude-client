@@ -11,7 +11,7 @@ const serverURL = isProduction ? prodURL : devURL
 const PERIODIC_SYNC_TIME = 2000
 const TARGET_UPDATE_THROTTLE = 1000
 
-const initialState = {players: {}, structures: {}}
+const initialState = {players: {}, structures: {}, messages: []}
 const RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
 
 function reducer(state, action) {
@@ -40,7 +40,7 @@ function reducer(state, action) {
             return { ...state, players: { ...state.players, [playerId]: { ...player, keyStates: { ...player.keyStates, [action.key]: action.state}}}}
         case "add_player_message":
             console.assert(playerId !== undefined, "Undefined playerId; required for:", action)
-            return { ...state, players: { ...state.players, [playerId]: { ...player, visibleMessages: [...player.visibleMessages, action.message] } } }
+            return { ...state, messages: [...state.messages, action.message], players: { ...state.players, [playerId]: { ...player, visibleMessages: [...player.visibleMessages, action.message] } } }
         case "remove_oldest_player_message":
             console.assert(playerId !== undefined, "Undefined playerId; required for:", action)
             if (player) {

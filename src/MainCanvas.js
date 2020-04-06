@@ -219,8 +219,8 @@ function MainCanvas({playerInfo}) {
         setMode(Const.MODE_DEFAULT)
     }
 
-    const getMessages = state => {
-        return Object.values(state.players || {}).reduce((messages, player) => messages = messages.concat(player.visibleMessages), [])
+    const sendChatMessage = message => {
+        execute("send_chat_message", message)
     }
 
     return (
@@ -307,7 +307,7 @@ function MainCanvas({playerInfo}) {
                 </mesh>
             </Canvas>
             {chatVisible &&
-                <ChatWindow players={state.players} sendChatMessage={message => execute("send_chat_message", message)} localPlayer={localPlayer} messages={getMessages(state)} hideChat={() => setChatVisible(false)}/>
+                <ChatWindow players={state.players} sendChatMessage={sendChatMessage} localPlayer={localPlayer} messages={state.messages} hideChat={() => setChatVisible(false)}/>
             }
         </div>
     )
