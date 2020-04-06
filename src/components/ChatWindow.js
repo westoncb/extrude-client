@@ -26,7 +26,7 @@ function ChatWindow({sendChatMessage, localPlayer, players, messages, hideChat})
             <div className="all-messages" ref={allMessagesRef}>
                 {messages.map(message => (
                     <div className="chat-message" key={message.time}>
-                        <div className="chat-message-name">{players[message.playerId].name}:</div>
+                        <div className="chat-message-name">{message.player.name}:</div>
                         <div className="chat-message-content">{message.message}</div>
                     </div>
                 ))}

@@ -156,7 +156,7 @@ function executeAction(action, socketRef, state, dispatch, throttledEmit) {
             throttledEmit({ type: "player_target_change", playerId: localPlayerId, target: action.target })
             break;
         case "send_chat_message":
-            socket.emit("event", { type: "chat_message", message: action.message, playerId: localPlayerId, time: new Date() })
+            socket.emit("event", { type: "chat_message", message: action.message, player: localPlayer, time: new Date() })
             break;
         case "update_structure":
             dispatch(action)
@@ -216,10 +216,10 @@ function handleServerEvent(event, state, dispatch, socket) {
 
 
             const messageDisplayTime = 5000 + (1000 * Math.floor(event.message.length / 100))
-            dispatch({ type: "add_player_message", playerId: event.playerId, message: {...event}})
+            dispatch({ type: "add_player_message", playerId: event.player.id, message: {...event}})
 
             setTimeout(() => {
-                dispatch({ type: "remove_oldest_player_message", playerId: event.playerId})
+                dispatch({ type: "remove_oldest_player_message", playerId: event.player.id})
             }, messageDisplayTime)
             
             break;
