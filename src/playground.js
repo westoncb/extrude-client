@@ -43,9 +43,13 @@ function reducer(state, action) {
             return { ...state, players: { ...state.players, [playerId]: { ...player, visibleMessages: [...player.visibleMessages, action.message] } } }
         case "remove_oldest_player_message":
             console.assert(playerId !== undefined, "Undefined playerId; required for:", action)
-            const visibleMessages = player.visibleMessages.slice()
-            visibleMessages.shift()
-            return { ...state, players: { ...state.players, [playerId]: { ...player, visibleMessages }}}
+            if (player) {
+                const visibleMessages = player.visibleMessages.slice()
+                visibleMessages.shift()
+                return { ...state, players: { ...state.players, [playerId]: { ...player, visibleMessages } } }
+            } else {
+                return state
+            }
         case "update_player_target":
             console.assert(playerId !== undefined, "Undefined playerId; required for:", action)
             return { ...state, players: { ...state.players, [playerId]: { ...player, target: action.target} } }

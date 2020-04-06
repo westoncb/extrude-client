@@ -24,13 +24,16 @@ function Player({ player, isLocalPlayer, t }) {
     const { size } = useThree()
     // const [tick, setTick] = useState(0)
 
-    useDOM(['#player-label-' + player.id], ["md2-root-" + player.id])
+    const removeLabel = useDOM(['#player-label-' + player.id], ["md2-root-" + player.id])
 
     useEffect(() => {
         const label = document.createElement("div")
         label.id = 'player-label-' + player.id
         label.innerText = player.name
-        document.getElementsByClassName("App")[0].appendChild(label)
+        const app = document.getElementsByClassName("App")[0]
+        app.appendChild(label)
+
+        return () => app.removeChild(label)
     }, [])
 
     useEffect(() => {

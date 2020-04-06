@@ -13,6 +13,8 @@ function ChatWindow({sendChatMessage, localPlayer, players, messages, hideChat})
         } else if (e.which === 27) { //escape key
             hideChat()
         }
+
+        e.stopPropagation()
     }
 
     useEffect(() => {
