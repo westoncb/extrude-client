@@ -158,6 +158,11 @@ class Util {
         // array style
         return Math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) < threshold;
     }
+
+    static scratch1 = new Vector3()
+    static vecsEqual3D(v1, v2, threshold = 0.001) {
+        return this.scratch1.subVectors(v1, v2).length() < threshold
+    }
 }
 
 export default Util

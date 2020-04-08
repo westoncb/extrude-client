@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useMemo } from 'react'
 import {DoubleSide, Vector3, Vector2, AdditiveBlending} from 'three'
 import {useThree, useFrame} from 'react-three-fiber'
+import Util from '../Util'
 
 const plane_size = 10000
 const pointerUV = new Vector2()
+const lastOrientation = new Vector3()
 let time = 0
 
 function TangentGrid({position, orientation, target, targetUV, mouse, cellSize}) {
@@ -14,8 +16,12 @@ function TangentGrid({position, orientation, target, targetUV, mouse, cellSize})
         if (meshRef.current) {
             const laPoint = position.clone().addScaledVector(orientation, 5)
             meshRef.current.lookAt(laPoint)
+            
+        }
+        if (!Util.vecsEqual3D(orientation, lastOrientation)) {
             time = 0
         }
+        lastOrientation.copy(orientation)
     }, [position, orientation])
 
     const uniforms = useMemo(() => {
@@ -35,7 +41,9 @@ function TangentGrid({position, orientation, target, targetUV, mouse, cellSize})
         uniforms.cellSize.value = cellSize
         uniforms.vTarget.value = target
         uniforms.targetUV.value = pointerUV
-        uniforms.time.value += delta
+
+        time += delta
+        uniforms.time.value = time
     })
 
     const onPointerMove = e => {
@@ -64,7 +72,7 @@ function TangentGrid({position, orientation, target, targetUV, mouse, cellSize})
         }
 
         void main() {
-            vec4 blue = vec4(0., 0., 1.5, 0.75 * (clamp(0., 1., 2.*log(time + 0.8))));
+            vec4 blue = vec4(0., 0., 1.5, 0.75 * (clamp(0., 1., 3.*log(time + 0.9))));
             float blendFactor = min(2.3 / length(fwidth(vUv)), 1.0);
             float gridVal = gridValue(pos);
             

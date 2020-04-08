@@ -25,54 +25,34 @@ function PartialStructure({player, finishStructureFunc}) {
 
     const visible = points.length > 0
 
+    const updateGridConfig = (e, points) => {
+        const rotation = e.object.rotation.clone()
+        const normal = e.face.normal.clone().applyEuler(rotation)
+
+        const zFightingShift = normal.clone().multiplyScalar(0.2)
+        const firstPointPos = points[0].clone().add(zFightingShift)
+        const cursorPos = e.point.clone().add(zFightingShift)
+        const sameNormals = normal.clone().sub(parentNormal).length() < 0.1
+        const thePosition = e.object === parentObject && sameNormals ? firstPointPos : cursorPos
+
+        setGridConfig({
+            ...gridConfig,
+            position: thePosition,
+            orientation: normal.clone(),
+            target: e.point.clone(),
+            mouse: new Vector2(mousePos.x, mousePos.y),
+            cellSize: 40,
+            targetUV: e.uv.clone()
+        })
+    }
+
     useEffect(() => {
         const handleMeshMouseMove = e => {
             if (visible) {
-                const vec = new Vector3(e.point.x, e.point.y, e.point.z)
-                setCursorPoint(vec)
-
-                const rotation = e.object.rotation.clone()
-                const normal = e.face.normal.clone().applyEuler(rotation)
-
-                // calculate side lengths of intersected face
-                // const vecs = ['a', 'b', 'c'].map(key => {
-                //     const i = e.face[key]
-                //     const nonBuffer = e.object.geometry.vertices
-                //     const verts = e.object.geometry.vertices || e.object.geometry.attributes['position'].array
-                    
-                //     if (nonBuffer) {
-                //         return verts[i].clone()
-                //     } else {
-                //         return new Vector3(verts[i * 3], verts[i * 3 + 1], verts[i * 3 + 2])
-                //     }
-                // }).map(p => p.applyEuler(rotation))
-
-                // const l1 = vecs[1].clone().sub(vecs[0])
-                // const l2 = vecs[2].clone().sub(vecs[1])
-                // const l3 = vecs[0].clone().sub(vecs[2])
-
-                // const sides = [l1, l2, l3]
-                // sides.sort((b, a) => a.length() - b.length())
-                // sides.pop()
-                // const avgSideLength = (sides[0].length() + sides[1].length()) / 2
-
-                // console.log("uv", e.uv.clone())
-                const zFightingShift = normal.clone().multiplyScalar(0.2)
-                const firstPointPos = points[0].clone().add(zFightingShift)
-                const cursorPos = e.point.clone().add(zFightingShift)
-                const sameNormals = normal.clone().sub(parentNormal).length() < 0.1
-                const thePosition = e.object === parentObject && sameNormals ? firstPointPos : cursorPos
+                setCursorPoint(e.point.clone())
 
                 if (points.length > 0) {
-                    setGridConfig({
-                        ...gridConfig,
-                        position: thePosition,
-                        orientation: normal,
-                        target: e.point.clone(),
-                        mouse: new Vector2(mousePos.x, mousePos.y),
-                        cellSize: 40,
-                        targetUV: e.uv.clone()
-                    })
+                    updateGridConfig(e, points)
                 }
             }
         }
@@ -98,7 +78,10 @@ function PartialStructure({player, finishStructureFunc}) {
                 }
             }
 
-            setPoints([...points, vec])
+            const newPoints = [...points, vec]
+            setPoints(newPoints)
+
+            updateGridConfig(e, newPoints)
 
             if (finish) {
 
