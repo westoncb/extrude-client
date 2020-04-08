@@ -8,8 +8,8 @@ import { useDOM } from './w-hooks'
 import ModelFactory from '../ModelFactory'
 import Util from '../Util'
 import './Player.css'
-import { Vector2 } from 'three';
-import Const from '../constants'
+import { Vector2, Line } from 'three';
+import { intersections } from '../global'
 
 // let imageCapture
 // let texture
@@ -76,7 +76,7 @@ function Player({ player, isLocalPlayer, t }) {
                 resolution: new Vector2(size.width, size.height)
             });
 
-            const line = new Line2(geometry, matLine)
+            const line = new Line(geometry, matLine)
             instance.root.add(line)
 
             setLaser(line)
@@ -110,7 +110,12 @@ function Player({ player, isLocalPlayer, t }) {
             player.position.y = md2.root.position.y
             player.position.z = md2.root.position.z
 
-            md2.target = player.target
+            if (isLocalPlayer && intersections[0]) {
+                player.target = intersections[0].point.clone()
+                md2.target = player.target
+            } else {
+                md2.target = player.target
+            }
             const pos = new THREE.Vector3(player.position.x, player.position.y, player.position.z)
             const tar = new THREE.Vector3(md2.target.x, md2.target.y, md2.target.z)
 

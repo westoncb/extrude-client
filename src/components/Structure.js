@@ -58,6 +58,9 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
         }
 
         if (meshRef.current) {
+
+            meshRef.current.userData.name = "structure"
+
             MeshEvents.listenFor("structure_" + structure.id, {
                 [MeshEvents.MOUSE_MOVE]: handleMeshMouseMove,
                 [MeshEvents.CLICK]: handleMeshClick,
