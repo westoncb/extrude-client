@@ -111,7 +111,7 @@ function initSocketEventHandlers(socket, state, dispatch) {
     socket.on("disconnect", data => {
         // This is a hack: it's not a server event, but we
         // want to use the same logic for now
-        handleServerEvent({ type: "player_exit", localPlayer })
+        handleServerEvent({ type: "player_exit", localPlayer }, state, dispatch, socket)
     })
 
     socket.on("reconnect", data => {

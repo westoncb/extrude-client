@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { Vector3, Vector2 } from 'three'
+import { Vector3, Vector2, Object3D } from 'three'
 import { extend, useThree, useUpdate } from "react-three-fiber"
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
@@ -7,7 +7,7 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 import MeshEvents from '../MeshEvents'
 import Util from '../Util'
 import TangentGrid from './TangentGrid'
-import mousePos from '../global'
+import { mousePos} from '../global'
 
 extend({ LineMaterial, LineGeometry, Line2 })
 
@@ -18,7 +18,9 @@ function PartialStructure({player, finishStructureFunc}) {
     const [points, setPoints] = useState([])
     const [cursorPoint, setCursorPoint] = useState(null)
     const [inSnapRange, setInSnapRange] = useState(false)
-    const [gridConfig, setGridConfig] = useState({position: new Vector3(), orientation: new Vector3(), mouse: new Vector2()})
+    const [gridConfig, setGridConfig] = useState({position: new Vector3(), target: new Vector2(), orientation: new Vector3(), mouse: new Vector2()})
+    const [parentNormal, setParentNormal] = useState(new Vector3())
+    const [parentObject, setParentObject] = useState(null)
     const { size } = useThree()
 
     const visible = points.length > 0
@@ -32,26 +34,44 @@ function PartialStructure({player, finishStructureFunc}) {
                 const rotation = e.object.rotation.clone()
                 const normal = e.face.normal.clone().applyEuler(rotation)
 
-                const relativeTarget = e.point.clone().sub(points[0])
-                const u = relativeTarget.normalize()
-                const v = normal.clone().cross(u)
+                // calculate side lengths of intersected face
+                // const vecs = ['a', 'b', 'c'].map(key => {
+                //     const i = e.face[key]
+                //     const nonBuffer = e.object.geometry.vertices
+                //     const verts = e.object.geometry.vertices || e.object.geometry.attributes['position'].array
+                    
+                //     if (nonBuffer) {
+                //         return verts[i].clone()
+                //     } else {
+                //         return new Vector3(verts[i * 3], verts[i * 3 + 1], verts[i * 3 + 2])
+                //     }
+                // }).map(p => p.applyEuler(rotation))
 
-                let x = u.clone().multiplyScalar(u.dot(e.point))
-                let y = v.clone().multiplyScalar(v.dot(e.point))
-                const target2d = new Vector2(x.length(), y.length())
+                // const l1 = vecs[1].clone().sub(vecs[0])
+                // const l2 = vecs[2].clone().sub(vecs[1])
+                // const l3 = vecs[0].clone().sub(vecs[2])
 
-                x = u.clone().multiplyScalar(u.dot(points[0]))
-                y = v.clone().multiplyScalar(v.dot(points[0]))
-                const firstPoint2d = new Vector2(x.length(), y.length())
+                // const sides = [l1, l2, l3]
+                // sides.sort((b, a) => a.length() - b.length())
+                // sides.pop()
+                // const avgSideLength = (sides[0].length() + sides[1].length()) / 2
+
+                // console.log("uv", e.uv.clone())
+                const zFightingShift = normal.clone().multiplyScalar(0.2)
+                const firstPointPos = points[0].clone().add(zFightingShift)
+                const cursorPos = e.point.clone().add(zFightingShift)
+                const sameNormals = normal.clone().sub(parentNormal).length() < 0.1
+                const thePosition = e.object === parentObject && sameNormals ? firstPointPos : cursorPos
 
                 if (points.length > 0) {
                     setGridConfig({
                         ...gridConfig,
-                        position: points[0].clone().addScaledVector(normal, 0.1),
+                        position: thePosition,
                         orientation: normal,
-                        target: e.point,
-                        anchorShift: target2d.clone().sub(firstPoint2d),
-                        mouse: new Vector2(mousePos.x, mousePos.y)
+                        target: e.point.clone(),
+                        mouse: new Vector2(mousePos.x, mousePos.y),
+                        cellSize: 40,
+                        targetUV: e.uv.clone()
                     })
                 }
             }
@@ -61,6 +81,13 @@ function PartialStructure({player, finishStructureFunc}) {
             if (e.shiftKey) return
 
             const vec = new Vector3(e.point.x, e.point.y, e.point.z)
+            const rotation = e.object.rotation.clone()
+            const normal = e.face.normal.clone().applyEuler(rotation)
+
+            if (points.length === 0) {
+                setParentNormal(normal)
+                setParentObject(e.object)
+            }
 
             let finish = false
             if (points.length > 2) {
@@ -74,16 +101,6 @@ function PartialStructure({player, finishStructureFunc}) {
             setPoints([...points, vec])
 
             if (finish) {
-
-                // This snippet may be useful soon
-                const rotation = e.object.rotation.clone()
-                // rotation.x *= -1
-                // rotation.y *= -1
-                // rotation.z *= -1
-
-                const normal = e.face.normal.clone().applyEuler(rotation)
-                // const centroid = Util.centroid(points)
-                // const extrusionLine = {start: centroid, end: centroid.clone().addScaledVector(normal, 10)}
 
                 const structure = { id: Util.generateId(), owner: player.id, points, normal, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1} }
 
@@ -166,6 +183,8 @@ function PartialStructure({player, finishStructureFunc}) {
                     orientation={gridConfig.orientation}
                     target={gridConfig.target}
                     mouse={gridConfig.mouse}
+                    cellSize={gridConfig.cellSize}
+                    targetUV={gridConfig.targetUV}
                 />
             }
         </>

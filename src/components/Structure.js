@@ -7,7 +7,7 @@ import Util from '../Util'
 
 const INITIAL_EXTRUSION_DEPTH = 4
 
-function Structure({structure, updateStructure, active, player, onPointerMove, onClick, onPointerOut, mode, setMode, mouseTravel}) {
+function Structure({structure, updateStructure, active, player, onPointerMove, onClick, onPointerOut, mode, setMode, shiftDown, mouseTravel}) {
     const [baseShape, setBaseShape] = useState(null)
     const [overMainFace, setOverMainFace] = useState(false)
     const [dragStartPoint, setDragStartPoint] = useState(null)
@@ -74,7 +74,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
         <>
             {baseShape &&
                 <mesh ref={meshRef} quaternion={rotationFromNormal(structure.normal)} position={position} castShadow receiveShadow onPointerMove={onPointerMove} onClick={onClick} onPointerOut={onPointerOut}>
-                <extrudeGeometry attach="geometry" args={[baseShape, structure.extrusionParams]} />
+                <extrudeBufferGeometry attach="geometry" args={[baseShape, structure.extrusionParams]} />
                     
                     {showHighlightedMaterial &&
                         <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x00ff00} emissiveIntensity={0.7} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
@@ -90,7 +90,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                 </mesh>
             }
 
-            {baseShape && mode !== Const.MODE_EXTRUDE &&
+            {baseShape && mode !== Const.MODE_EXTRUDE && shiftDown &&
                 <mesh quaternion={rotationFromNormal(structure.normal)} position={getIndicatorPosition(position, structure.normal, structure.extrusionParams.depth)}>
                     <extrudeBufferGeometry attach="geometry" args={[baseShape, { depth: 1, bevelSize: 1, bevelThickness: 1, bevelSegments: 2 }]} />
 
@@ -98,7 +98,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                         <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
                     {!highlightExtrusionSurface &&
-                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} emissiveIntensity={0.025} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} emissiveIntensity={0.05} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
 
                 </mesh>

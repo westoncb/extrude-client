@@ -2,5 +2,6 @@ import {Vector2} from 'three'
 
 
 const mousePos = new Vector2()
+const keyStates = {}
 
-export default mousePos
+export { mousePos, keyStates }

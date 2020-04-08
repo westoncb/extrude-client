@@ -3,8 +3,10 @@ import {DoubleSide, Vector3, Vector2, AdditiveBlending} from 'three'
 import {useThree, useFrame} from 'react-three-fiber'
 
 const plane_size = 10000
+const pointerUV = new Vector2()
+let time = 0
 
-function TangentGrid({position, orientation, target, mouse}) {
+function TangentGrid({position, orientation, target, targetUV, mouse, cellSize}) {
     const { size } = useThree()
     const meshRef = useRef()
 
@@ -12,6 +14,7 @@ function TangentGrid({position, orientation, target, mouse}) {
         if (meshRef.current) {
             const laPoint = position.clone().addScaledVector(orientation, 5)
             meshRef.current.lookAt(laPoint)
+            time = 0
         }
     }, [position, orientation])
 
@@ -19,55 +22,96 @@ function TangentGrid({position, orientation, target, mouse}) {
         return {
             vTarget: { value: target },
             planeSize: { value: new Vector2(plane_size, plane_size) },
-            mouse: { value: mouse }
+            mouse: { value: mouse },
+            cellSize: { value: cellSize},
+            targetUV: { value: pointerUV},
+            time: {value: time}
         }
     }, [])
 
-    useFrame(() => {
+    useFrame((info, delta) => {
         uniforms.mouse.value.x = mouse.x
         uniforms.mouse.value.y = size.height - mouse.y
+        uniforms.cellSize.value = cellSize
+        uniforms.vTarget.value = target
+        uniforms.targetUV.value = pointerUV
+        uniforms.time.value += delta
     })
+
+    const onPointerMove = e => {
+        pointerUV.x = e.uv.x
+        pointerUV.y = e.uv.y
+    }
 
     const fragmentShader = `
         varying vec3 norm;
         varying vec2 pos;
         varying vec2 vUv;
-        varying vec2 target;
-        uniform vec2 planeSize;
+        varying vec2 wTargetUV;
 
+        uniform vec2 planeSize;
         uniform vec2 mouse;
+        uniform float cellSize;
+        uniform float time;
+
+        const float PI = 3.1418;
 
         float gridValue(vec2 coord){
-            vec2 nCoord = coord / 40.;
-            vec2 grid = abs(fract(nCoord - 10.) - 0.5) / fwidth(nCoord*2.95);
+            vec2 nCoord = (coord / cellSize);
+            vec2 grid = abs(fract(nCoord) - 0.5) / fwidth(nCoord*2.95);
             float line = min(grid.x, grid.y);
             return 1.0 - min(line, 1.0);
         }
 
         void main() {
-            vec4 blue = vec4(0., 0., 1.5, 0.75);
+            vec4 blue = vec4(0., 0., 1.5, 0.75 * (clamp(0., 1., 2.*log(time + 0.8))));
             float blendFactor = min(2.3 / length(fwidth(vUv)), 1.0);
-            float v = gridValue(pos);
-            float targetVal = 1. - smoothstep(8., 15., length(mouse - gl_FragCoord.xy));
+            float gridVal = gridValue(pos);
+            
+            // shift the 'spotlight' based on mouse pos
             vec2 mouseOffset = (gl_FragCoord.xy - mouse) / planeSize.x;
-            gl_FragColor = blue * max(v, targetVal) * (1. - smoothstep(0.04, 0.065, length(vUv - 0.5 + mouseOffset))) * blendFactor;
+
+            
+            vec2 pointToJunction = abs(fract(pos / cellSize)) - 0.5;
+            float edgeDist = length(pointToJunction);
+            float steppedEdgeDist = (1. - smoothstep(0.25, 0.28, edgeDist));
+
+            vec2 mouseToEdge = abs(fract(wTargetUV / cellSize)) - 0.5;
+            float steppedMouseDist = 1. - smoothstep(0.23, 0.25, length(mouseToEdge));
+
+            vec2 mouseIndex = floor(wTargetUV / cellSize);
+            vec2 posIndex = floor(pos / cellSize);
+
+            // toggle snap point rendering depending on whether mouse and current
+            // pixel are near the same grid vertex
+            float toggle = 1. - clamp(0., 1., length(mouseIndex - posIndex));
+            vec2 mouseToPoint = pos - wTargetUV;
+            float rings = clamp(0., 1., mod(edgeDist*5. * (PI/2.) * 7. + time*4., 2.*PI) - 2.);
+            float snapVal = min(steppedMouseDist, steppedEdgeDist)*toggle*rings;
+
+            float spotlight = (1. - smoothstep(0.04, 0.065, length(vUv - 0.5 + mouseOffset)));
+
+            gl_FragColor = (1.-snapVal) * blue * gridVal * spotlight * blendFactor + vec4(1.0, 0., 1.0, 0.7) * snapVal;
         }
     `
 
     const vertexShader = `
         varying vec3 norm;
         varying vec2 pos;
+        varying vec2 wTargetUV;
         varying vec2 vUv;
-        varying vec2 target;
+        
+        uniform float time;
 
-        uniform vec3 vTarget;
         uniform vec2 planeSize;
         uniform vec2 mouse;
+        uniform vec2 targetUV;
+        uniform float cellSize;
 
         void main() {
             norm = normalize(normalMatrix * normal);
-            pos = (uv * planeSize);
-            target = vec2(planeSize.x/2., planeSize.y/2.);
+            pos = (((uv - 0.5) * planeSize) + cellSize/2.);
+            wTargetUV = ((targetUV - 0.5) * planeSize) + cellSize/2.;
             vUv = uv;
 
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -75,7 +119,7 @@ function TangentGrid({position, orientation, target, mouse}) {
     `
 
     return (
-        <mesh ref={meshRef} position={position}>
+        <mesh ref={meshRef} position={position} onPointerMove={onPointerMove}>
             <planeGeometry attach="geometry" args={[plane_size, plane_size]}></planeGeometry>
             <shaderMaterial attach="material" extensions={{derivatives: true}} blending={AdditiveBlending} depthTest={true} depthWrite={true} transparent side={DoubleSide} uniforms={uniforms} fragmentShader={fragmentShader} vertexShader={vertexShader} />
         </mesh>

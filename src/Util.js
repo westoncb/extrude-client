@@ -124,6 +124,40 @@ class Util {
         const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
         return x * x * (3 - 2 * x);
     }
+
+    /*
+    From: https://github.com/math-utils/area-polygon
+  */
+    static polygonArea(points) {
+        let det = 0;
+
+        points = points.map(point => {
+            if (!Array.isArray(point)) return point;
+            return {
+                x: point[0],
+                y: point[1],
+            };
+        });
+
+        if (!Util.pointsAreEqual2D(points[0], points[points.length - 1]))
+            points = points.concat(points[0]);
+
+        for (let i = 0; i < points.length - 1; i += 1)
+            det += points[i].x * points[i + 1].y - points[i].y * points[i + 1].x;
+
+        return Math.abs(det) / 2;
+    }
+
+    // Works for points in object or array format
+    static pointsAreEqual2D(p1, p2, threshold = 0.001) {
+        // object style
+        if (p1.x !== undefined) {
+            return Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2) < threshold;
+        }
+
+        // array style
+        return Math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) < threshold;
+    }
 }
 
 export default Util

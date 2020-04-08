@@ -16,7 +16,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import './MainCanvas.css'
 import { Vector3, MathUtils } from 'three'
 import Util from './Util'
-import mousePos from './global'
+import {mousePos, keyStates} from './global'
 
 extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
 
@@ -47,20 +47,15 @@ const CameraController = ({localPlayer, mode}) => {
 
             camDest.copy(position.clone().add(extension))
 
-            camLookAtDest.copy(target.clone().add(target.clone().sub(position).multiplyScalar(0.8)))
+            camLookAtDest.copy(position)
 
 
-            const positionGap = camera.position.clone().sub(camDest).length()
-            const scale = MathUtils.clamp(positionGap / 10, 0.1, 4)
-            camera.position.copy(camera.position.lerp(camDest, 0.005 * scale * Util.smoothstep(100, 115, positionGap)))
+            const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
+            camera.position.copy(camera.position.lerp(camDest, 0.005 * scale))
 
 
-            const lookAtGap = lastLookAtVec.clone().sub(camLookAtDest).length()
-            const newLookAt = lastLookAtVec.lerp(camLookAtDest, Util.smoothstep(75, 90, lookAtGap) * 0.005).clone()
-            
+            const newLookAt = lastLookAtVec.lerp(camLookAtDest, 0.05).clone()
             camera.lookAt(newLookAt)
-            lastLookAtVec.copy(newLookAt)
-            
             camera.updateProjectionMatrix()
         }
     })
@@ -99,7 +94,7 @@ function Effects({ssao, bloom}) {
     )
 }
 
-function InputHandler({mode, setMode, execute, structures, chatVisible, setChatVisible, setT, activeObjectId, setActiveObjectId, mouseTravel, setMouseTravel}) {
+function InputHandler({mode, setMode, execute, structures, chatVisible, setChatVisible, setT, setShiftDown, activeObjectId, setActiveObjectId, mouseTravel, setMouseTravel}) {
     const { gl, size } = useThree()
 
     useEffect(() => {
@@ -124,7 +119,11 @@ function InputHandler({mode, setMode, execute, structures, chatVisible, setChatV
                 setChatVisible(!chatVisible)
             }
 
+            keyStates[e.key] = true
             execute("key_down", {...e, which: e.which, key: e.key})
+            if (e.key === 'Shift') {
+                setShiftDown(true)
+            }
 
             if (e.key === ' ') {
                 setT(0)
@@ -132,6 +131,10 @@ function InputHandler({mode, setMode, execute, structures, chatVisible, setChatV
             }
         }
         window.onkeyup = e => {
+            keyStates[e.key] = true
+            if (e.key === 'Shift') {
+                setShiftDown(false)
+            }
             execute("key_up", { ...e, which: e.which, key: e.key})
         }
         gl.domElement.onmousemove = e => {
@@ -181,6 +184,7 @@ function MainCanvas({playerInfo}) {
     const [t, setT] = useState(100)
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
     const [mode, setMode] = useState(Const.MODE_DEFAULT)
+    const [shiftDown, setShiftDown] = useState(false)
     const {execute, state} = usePlayground()
     const localPlayer = state.players[state.localPlayerId]
 
@@ -232,7 +236,7 @@ function MainCanvas({playerInfo}) {
             <Canvas
                 style={{ backgroundColor: "#789" }}
                 gl={{ antialias: false, alpha: false}}
-                pixelRatio={window.devicePixelRatio}
+                pixelRatio={1}
                 camera={{ position: [0, 10, 10], near: 1, far: 4000 }}
                 shadowMap
                 onCreated={({ gl }) => {
@@ -256,6 +260,7 @@ function MainCanvas({playerInfo}) {
                     mouseTravel={mouseTravel}
                     setMouseTravel={setMouseTravel}
                     setT={setT}
+                    setShiftDown={setShiftDown}
                 />
                 <CameraController localPlayer={localPlayer} mode={mode} />
 
@@ -292,6 +297,7 @@ function MainCanvas({playerInfo}) {
                                                 onPointerOver={handleMeshPointerOver}
                                                 mode={mode}
                                                 active={activeObjectId === structure.id}
+                                                shiftDown={shiftDown}
                                                 setMode={(mode, id) => {
                                                     setMode(mode)
                                                     if (id) setActiveObjectId(id)
