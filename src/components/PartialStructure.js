@@ -71,7 +71,10 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
                 setParentObject(e.object)
             }
 
-            const newPoints = [...points, snappedPoint]
+            const newPoint = snappedPoint.clone()
+            newPoint.id = Util.generateId()
+
+            const newPoints = [...points, newPoint]
             setPoints(newPoints)
             updateGridConfig(e, newPoints)
         }
@@ -107,7 +110,8 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
 
             // Check if first and last points overlap
             if (points[0].clone().sub(points[points.length - 1]).length() < 0.1) {
-                const structure = { id: Util.generateId(), owner: player.id, points, normal: parentNormal, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1 } }
+                const pointsWithoutLast = points.slice(0, points.length - 1)
+                const structure = { id: Util.generateId(), owner: player.id, points: pointsWithoutLast, normal: parentNormal, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1 } }
 
                 finishStructureFunc(structure)
                 setPoints([])
@@ -137,7 +141,7 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
             </line2>
 
             {points.map((point, i) => (
-                <mesh key={point.x+""+point.y+""+point.z} castShadow position={[point.x, point.y, point.z]}>
+                <mesh key={point.id} castShadow position={[point.x, point.y, point.z]}>
                     <sphereGeometry attach="geometry" args={[(i === 0 && inSnapRange) ? SNAP_RADIUS : 7, 32, 32]} />
                     <meshPhysicalMaterial attach="material" color={(i === 0 && inSnapRange) ? 0x00ff00 : 0x117700} clearcoat metalness={0.25} clearcoatRoughness={0.75} roughness={0.1}/>
                 </mesh>
