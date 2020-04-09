@@ -15,7 +15,7 @@ import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import './MainCanvas.css'
 import { Vector3, MathUtils } from 'three'
-import Util from './Util'
+import { snap } from './components/w-hooks'
 import {mousePos, keyStates} from './global'
 
 extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
@@ -185,8 +185,10 @@ function MainCanvas({playerInfo}) {
     const grassTexture = useMemo(() => new THREE.TextureLoader().load("rust2.jpg"), [])
     const [mode, setMode] = useState(Const.MODE_DEFAULT)
     const [shiftDown, setShiftDown] = useState(false)
-    const {execute, state} = usePlayground()
+    const {execute, dispatch, state} = usePlayground()
     const localPlayer = state.players[state.localPlayerId]
+    const [lastSnappedPoint, setLastSnappedPoint] = useState(new Vector3())
+    let snappedPoint = lastSnappedPoint
 
     useEffect(() => {
         execute("initialize", {player: playerInfo})
@@ -198,7 +200,10 @@ function MainCanvas({playerInfo}) {
         // Required so reac-three-fiber only processes the nearest mesh
         e.stopPropagation()
 
-        execute("update_player_target", {target: e.point, playerId: localPlayer.id})
+        snappedPoint = snap(state, e)
+        setLastSnappedPoint(snappedPoint)
+
+        execute("update_player_target", {target: snappedPoint, playerId: localPlayer.id})
         MeshEvents.eventOccurred(MeshEvents.MOUSE_MOVE, e)
     }
     const handleMeshClick = e => {
@@ -220,7 +225,6 @@ function MainCanvas({playerInfo}) {
     }
 
     const updateStructure = structure => {
-        console.log("calling update structure", structure)
         execute("update_structure", {structure})
         setActiveObjectId(null)
         setMouseTravel({ x: 0, y: 0})
@@ -283,7 +287,7 @@ function MainCanvas({playerInfo}) {
                 {Object.values(state.players).map(player => <Player key={player.id} t={t} player={player} isLocalPlayer={player.id === localPlayer.id} />)}
 
                 {mode === Const.MODE_DEFAULT &&
-                    <PartialStructure player={localPlayer} finishStructureFunc={finishStructure} />
+                    <PartialStructure player={localPlayer} snappedPoint={snappedPoint} dispatch={dispatch} finishStructureFunc={finishStructure} />
                 }
 
                 {Object.values(state.structures).map(structure => <Structure 

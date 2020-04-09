@@ -1,4 +1,4 @@
-import {Box3, Vector3} from 'three'
+import { Box3, Vector3 } from 'three'
 
 class Util {
     static randString(length) {

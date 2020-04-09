@@ -82,10 +82,10 @@ function TangentGrid({position, orientation, target, targetUV, mouse, cellSize})
             
             vec2 pointToJunction = abs(fract(pos / cellSize)) - 0.5;
             float edgeDist = length(pointToJunction);
-            float steppedEdgeDist = (1. - smoothstep(0.25, 0.28, edgeDist));
+            float steppedEdgeDist = (1. - smoothstep(0.35, 0.35, edgeDist));
 
             vec2 mouseToEdge = abs(fract(wTargetUV / cellSize)) - 0.5;
-            float steppedMouseDist = 1. - smoothstep(0.23, 0.25, length(mouseToEdge));
+            float steppedMouseDist = 1. - smoothstep(0.35, 0.35, length(mouseToEdge));
 
             vec2 mouseIndex = floor(wTargetUV / cellSize);
             vec2 posIndex = floor(pos / cellSize);

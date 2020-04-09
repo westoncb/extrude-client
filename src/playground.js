@@ -11,7 +11,7 @@ const serverURL = isProduction ? prodURL : devURL
 const PERIODIC_SYNC_TIME = 2000
 const TARGET_UPDATE_THROTTLE = 1000
 
-const initialState = {players: {}, structures: {}, messages: []}
+const initialState = {players: {}, structures: {}, messages: [], partialPoints: [], cellSize: 30}
 const RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
 
 function reducer(state, action) {
@@ -53,6 +53,10 @@ function reducer(state, action) {
         case "update_player_target":
             console.assert(playerId !== undefined, "Undefined playerId; required for:", action)
             return { ...state, players: { ...state.players, [playerId]: { ...player, target: action.target} } }
+        case "update_partial_points":
+            return { ...state, partialPoints: action.points.slice() }
+        case "update_cell_size":
+            return { ...state, cellSize: action.cellSize }
         default:
             console.log("unrecognized action: ", action)
             return state
@@ -92,7 +96,8 @@ function usePlayground() {
 
     return {
         execute,
-        state
+        state,
+        dispatch
     }
 }
 
