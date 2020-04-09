@@ -1,7 +1,7 @@
 import React, {useMemo, useEffect, useState, useRef} from 'react'
 import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
-import { Canvas, extend, useThree, useFrame, useUpdate } from 'react-three-fiber'
+import { Canvas, extend, useThree, useFrame } from 'react-three-fiber'
 import usePlayground from './playground'
 import Const from './constants'
 import MeshEvents from './MeshEvents'
@@ -9,15 +9,14 @@ import Player from './components/Player'
 import PartialStructure from './components/PartialStructure'
 import Structure from './components/Structure'
 import ChatWindow from './components/ChatWindow'
-import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import './MainCanvas.css'
-import { Vector3, MathUtils, Raycaster } from 'three'
+import { Vector3, MathUtils } from 'three'
 import Util from './Util'
-import {mousePos, keyStates, intersections} from './global'
+import {mousePos, keyStates} from './global'
 
 extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
 
@@ -25,35 +24,16 @@ const stats = new Stats()
 const camDest = new Vector3(0, 100, 100)
 const camLookAtDest = new Vector3(0, 0, 0)
 const lastLookAtVec = new Vector3()
-const raycaster = new Raycaster()
 
 let camZoom = 1
-let frame = 0
 
 const CameraController = ({localPlayer, mode}) => {
     const { camera, scene } = useThree()
-    const [frameIndex, setFrameIndex] = useState(0)
-
-    useEffect(() => {
-        
-    }, [frameIndex, scene.children, camera])
 
     useFrame(() => {
         stats.update()
         
-        // Note that doing this every-frame raycasting was causing periodic
-        // crashes before, probably because the timing here is during a
-        // react-three-fiber scene rebuild or something. The crash was in
-        // Line2.js specifically and removing it seems to have fixed things,
-        // but if you're seeing random crashes this could be an issue...
-        const x = (mousePos.x / window.innerWidth) * 2 - 1;
-        const y = - (mousePos.y / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera({ x, y }, camera)
-        intersections.length = 0
-        raycaster.intersectObjects(scene.children).forEach(i => intersections.push(i))
-
         if (mode === Const.MODE_DEFAULT) {
-
             const positionObj = localPlayer.position
             const targetObj = localPlayer.target
             const position = new Vector3(positionObj.x, positionObj.y, positionObj.z)
@@ -206,27 +186,19 @@ function MainCanvas({playerInfo}) {
     const [mode, setMode] = useState(Const.MODE_DEFAULT)
     const [shiftDown, setShiftDown] = useState(false)
     const {execute, state} = usePlayground()
-    const mainPlaneRef = useRef()
     const localPlayer = state.players[state.localPlayerId]
 
     useEffect(() => {
         execute("initialize", {player: playerInfo})
+        console.log("executed initialize!")
     }, [playerInfo])
-
-    useEffect(() => {
-        if (mainPlaneRef.current) {
-            mainPlaneRef.current.userData.name = "main_plane"
-        }
-    }, [mainPlaneRef.current])
 
     const handleMeshMouseMove = e => {
 
         // Required so reac-three-fiber only processes the nearest mesh
         e.stopPropagation()
 
-        // This is just to send it over the network
         execute("update_player_target", {target: e.point, playerId: localPlayer.id})
-
         MeshEvents.eventOccurred(MeshEvents.MOUSE_MOVE, e)
     }
     const handleMeshClick = e => {
@@ -274,8 +246,6 @@ function MainCanvas({playerInfo}) {
                     gl.setClearColor(new THREE.Color("#667788"))
                 }}
             >
-                <CameraController localPlayer={localPlayer} mode={mode} />
-
                 <Effects />
 
                 <InputHandler 
@@ -292,6 +262,7 @@ function MainCanvas({playerInfo}) {
                     setT={setT}
                     setShiftDown={setShiftDown}
                 />
+                <CameraController localPlayer={localPlayer} mode={mode} />
 
                 <fog attach="fog" args={[0x667788, 500, 1500]} />
                 <ambientLight args={[0x666666]} />
@@ -338,7 +309,6 @@ function MainCanvas({playerInfo}) {
                     rotation-x={- Math.PI / 2} 
                     onPointerMove={handleMeshMouseMove}
                     onClick={handleMeshClick}
-                    ref={mainPlaneRef}
                 >
                     <planeBufferGeometry attach="geometry" args={[16000, 16000]} />
                     <meshStandardMaterial attach="material" color={0x333333} roughness={0.55} metalness={0.8}>

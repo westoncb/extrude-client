@@ -152,8 +152,7 @@ function executeAction(action, socketRef, state, dispatch, throttledEmit) {
             socket.emit("event", { type: "input_key_up", playerId: localPlayerId, key: action.key })
             break;
         case "update_player_target":
-            // We're not using the reducer for this anymore—manually updating (i.e. mutating) it every frame
-            // dispatch({ type: "update_player_target", playerId: localPlayerId, target: action.target })
+            dispatch({ type: "update_player_target", playerId: localPlayerId, target: action.target })
             throttledEmit({ type: "player_target_change", playerId: localPlayerId, target: action.target })
             break;
         case "send_chat_message":

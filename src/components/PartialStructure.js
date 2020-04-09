@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import { Vector3, Vector2, Object3D } from 'three'
-import { extend, useThree, useUpdate, useFrame } from "react-three-fiber"
+import { extend, useThree, useUpdate } from "react-three-fiber"
 import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
@@ -8,7 +8,6 @@ import MeshEvents from '../MeshEvents'
 import Util from '../Util'
 import TangentGrid from './TangentGrid'
 import { mousePos} from '../global'
-import { intersections } from '../global'
 
 extend({ LineMaterial, LineGeometry, Line2 })
 
@@ -47,27 +46,15 @@ function PartialStructure({player, finishStructureFunc}) {
         })
     }
 
-    useFrame(() => {
-
-        if (visible) {
-
-            const inter = intersections.filter(i => i.object.userData.name === "main_plane" || i.object.userData.name === "structure")
-
-            if (inter[0] && inter[0].face) {
-                setCursorPoint(inter[0].point.clone())
-
-                if (points.length > 0) {
-                    if (cursorPoint) {
-                        updateGridConfig(inter[0], points)
-                    }
-                }
-            }
-        }
-    })
-
     useEffect(() => {
         const handleMeshMouseMove = e => {
-            
+            if (visible) {
+                setCursorPoint(e.point.clone())
+
+                if (points.length > 0) {
+                    updateGridConfig(e, points)
+                }
+            }
         }
 
         const handleMeshClick = e => {
@@ -78,11 +65,8 @@ function PartialStructure({player, finishStructureFunc}) {
             const normal = e.face.normal.clone().applyEuler(rotation)
 
             if (points.length === 0) {
-                console.log("setting that parent normal", normal)
-                setParentNormal(normal.clone())
+                setParentNormal(normal)
                 setParentObject(e.object)
-            } else {
-                console.log("points", points)
             }
 
             let finish = false

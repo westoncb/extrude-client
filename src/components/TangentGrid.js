@@ -16,7 +16,6 @@ function TangentGrid({position, orientation, target, targetUV, mouse, cellSize})
         if (meshRef.current) {
             const laPoint = position.clone().addScaledVector(orientation, 5)
             meshRef.current.lookAt(laPoint)
-            meshRef.current.userData.name="tangent_grid"
             
         }
         if (!Util.vecsEqual3D(orientation, lastOrientation)) {
