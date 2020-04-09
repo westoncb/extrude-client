@@ -1,5 +1,5 @@
 import io from "socket.io-client"
-import Player from './PlayerData'
+import Const from './constants'
 import {throttle} from 'lodash-es'
 import { useRef, useEffect, useReducer, useMemo } from "react"
 
@@ -11,7 +11,7 @@ const serverURL = isProduction ? prodURL : devURL
 const PERIODIC_SYNC_TIME = 2000
 const TARGET_UPDATE_THROTTLE = 1000
 
-const initialState = {players: {}, structures: {}, messages: [], partialPoints: [], cellSize: 30}
+const initialState = { players: {}, structures: {}, messages: [], partialPoints: [], cellSize: Const.BASE_CELL_SIZE}
 const RECOGNIZED_KEYS = ["a", "w", "s", "d", "f", "e", "q", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]
 
 function reducer(state, action) {

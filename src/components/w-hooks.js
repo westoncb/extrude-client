@@ -1,9 +1,8 @@
 import { useThree, useFrame } from 'react-three-fiber'
 import Util from '../Util'
 import { Vector3, Vector2 } from 'three'
-import { stateContainer } from '../global'
 import usePlayground from '../playground'
-import { useMemo, useCallback } from 'react'
+import Const from '../constants'
 
 function useDOM(domSelectors, sceneNames) {
     const { scene, size, camera } = useThree()
@@ -72,7 +71,7 @@ const snap = (state, e) => {
         const uv = new Vector2(u + cellSize / 2, v + cellSize / 2)
 
         const modVec = new Vector2(Math.abs(Util.fract(uv.x / cellSize)) - 0.5, Math.abs(Util.fract(uv.y / cellSize)) - 0.5)
-        const inRange = (1 - Util.step(0.35, modVec.length())) > 0
+        const inRange = (1 - Util.step(Const.CELL_SNAP_RATIO, modVec.length())) > 0
 
         if (inRange) {
 

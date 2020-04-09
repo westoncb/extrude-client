@@ -8,7 +8,7 @@ import MeshEvents from '../MeshEvents'
 import Util from '../Util'
 import TangentGrid from './TangentGrid'
 import { mousePos} from '../global'
-import usePlayground from '../playground'
+import Const from '../constants'
 
 extend({ LineMaterial, LineGeometry, Line2 })
 
@@ -45,7 +45,7 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
             orientation: normal.clone(),
             target: e.point.clone(),
             mouse: new Vector2(mousePos.x, mousePos.y),
-            cellSize: 30,
+            cellSize: Const.BASE_CELL_SIZE,
             targetUV: e.uv.clone()
         })
     }

@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useMemo } from 'react'
 import {DoubleSide, Vector3, Vector2, AdditiveBlending} from 'three'
 import {useThree, useFrame} from 'react-three-fiber'
 import Util from '../Util'
+import Const from "../constants"
 
 const plane_size = 10000
 const pointerUV = new Vector2()
@@ -82,10 +83,10 @@ function TangentGrid({position, orientation, target, targetUV, mouse, cellSize})
             
             vec2 pointToJunction = abs(fract(pos / cellSize)) - 0.5;
             float edgeDist = length(pointToJunction);
-            float steppedEdgeDist = (1. - smoothstep(0.35, 0.35, edgeDist));
+            float steppedEdgeDist = (1. - smoothstep(${Const.CELL_SNAP_RATIO-0.03}, ${Const.CELL_SNAP_RATIO}, edgeDist));
 
             vec2 mouseToEdge = abs(fract(wTargetUV / cellSize)) - 0.5;
-            float steppedMouseDist = 1. - smoothstep(0.35, 0.35, length(mouseToEdge));
+            float steppedMouseDist = 1. - smoothstep(${Const.CELL_SNAP_RATIO-0.03}, ${Const.CELL_SNAP_RATIO}, length(mouseToEdge));
 
             vec2 mouseIndex = floor(wTargetUV / cellSize);
             vec2 posIndex = floor(pos / cellSize);
