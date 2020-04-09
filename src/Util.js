@@ -113,11 +113,8 @@ class Util {
         return "" + Math.round(Math.random() * 1000000)
     }
 
-    static step(min, max, value) {
-        if (value <= min)
-            return 0;
-        if (value >= max)
-            return 1;
+    static step(threshold, value) {
+        return value <= threshold ? 0 : 1
     }
 
     static smoothstep(min, max, value) {
@@ -157,6 +154,10 @@ class Util {
 
         // array style
         return Math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) < threshold;
+    }
+
+    static fract(x) {
+        return x - Math.floor(x)
     }
 
     static scratch1 = new Vector3()
