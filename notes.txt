@@ -26,6 +26,10 @@ If you allowed people to edit edges and vertices you could make ramps/other slop
 
 Subdivisions coudl just be a material modifier, or something used for destructible objects: https://threejs.org/examples/#webgl_modifier_subdivision OR https://threejs.org/examples/#webgl_modifier_tessellation
 
+Probably trigger different camera behavior once you've placed a polygon point into a partial
+
+Only show blue (non-highlighted) caps when shift is pressed. Show all on shift press, but only highly the one under the cursor.
+
 ** It could simplify things a lot to move the Playground instance into App and pass in things like the players and structures arrays as props to main canvas.
 
 Would be cool to allow materials like: 
