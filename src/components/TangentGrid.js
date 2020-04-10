@@ -98,7 +98,8 @@ function TangentGrid({position, orientation, target, targetUV, mouse, cellSize})
             float rings = clamp(0., 1., mod(edgeDist*5. * (PI/2.) * 7. + time*4., 2.*PI) - 2.);
             float snapVal = min(steppedMouseDist, steppedEdgeDist)*toggle*rings;
 
-            float spotlight = (1. - smoothstep(0.04, 0.065, length(vUv - 0.5 + mouseOffset)));
+            // Some of the constants here depend on planeSize
+            float spotlight = (1. - smoothstep(0.03, 0.05, length(vUv - 0.5 + mouseOffset)));
 
             gl_FragColor = (1.-snapVal) * blue * gridVal * spotlight * blendFactor + vec4(1.0, 0., 1.0, 0.7) * snapVal;
         }
