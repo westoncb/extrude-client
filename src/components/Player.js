@@ -120,10 +120,10 @@ function Player({ player, isLocalPlayer, t }) {
             laser.geometry.setPositions([0, 20, 5, tar.x, tar.y, tar.z])
             laser.geometry.needsUpdate = true
 
-            if (lightRef.current) {
-                lightRef.current.target.position.copy(player.target)
-                lightRef.current.target.updateMatrixWorld()
-            }
+            // if (lightRef.current) {
+            //     lightRef.current.target.position.copy(player.target)
+            //     lightRef.current.target.updateMatrixWorld()
+            // }
         }
     })
 
@@ -131,19 +131,13 @@ function Player({ player, isLocalPlayer, t }) {
         <mesh>
             {md2 && 
                 <>
-                    <spotLight 
+                    {/* <spotLight 
                         ref={lightRef}
-                        castShadow
                         position={[player.position.x, player.position.y + 350, player.position.z]}
                         args={[0x9999ff]}
                         intensity={4}
                         penumbra={0.5} 
-                        shadow-camera-fov={45}
-                        shadow-camera-near={1}
-                        shadow-camera-far={12000}
-                        shadow-mapSize-width={1024}
-                        shadow-mapSize-height={1024}
-                    />
+                    /> */}
                     <primitive object={md2.root} onClick={e => console.log('click')}>
                         {/* <mesh position={[0, 200, -100]}>
                             <planeBufferGeometry attach="geometry" args={[250, 150]} />

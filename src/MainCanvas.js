@@ -188,12 +188,20 @@ function MainCanvas({playerInfo}) {
     const {execute, dispatch, state} = usePlayground()
     const localPlayer = state.players[state.localPlayerId]
     const [lastSnappedPoint, setLastSnappedPoint] = useState(new Vector3())
+    const dirLight2Ref = useRef()
     let snappedPoint = lastSnappedPoint
 
     useEffect(() => {
         execute("initialize", {player: playerInfo})
         console.log("executed initialize!")
     }, [playerInfo])
+
+    useEffect(() => {
+        if (dirLight2Ref.current) {
+            dirLight2Ref.current.target.position.copy(new Vector3(0, 0, 0))
+            dirLight2Ref.current.target.updateMatrixWorld()
+        }
+    }, [dirLight2Ref.current])
 
     const handleMeshMouseMove = e => {
 
@@ -273,6 +281,21 @@ function MainCanvas({playerInfo}) {
                 <directionalLight
                     args={[0xffffff, 7]}
                     position={[0, 6000, 3000]}
+                    shadow-camera-left={-1000}
+                    shadow-camera-bottom={-1000}
+                    shadow-camera-right={1000}
+                    shadow-camera-top={1000}
+                    shadow-camera-near={1}
+                    shadow-camera-far={12000}
+                    shadow-mapSize-width={1024}
+                    shadow-mapSize-height={1024}
+                    castShadow
+                />
+
+                <directionalLight
+                    args={[0x9999ff, 7]}
+                    ref={dirLight2Ref}
+                    position={[500, 5000, -1000]}
                     shadow-camera-left={-1000}
                     shadow-camera-bottom={-1000}
                     shadow-camera-right={1000}
