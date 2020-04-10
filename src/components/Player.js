@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import * as THREE from 'three'
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
@@ -8,7 +8,7 @@ import { useDOM } from './w-hooks'
 import ModelFactory from '../ModelFactory'
 import Util from '../Util'
 import './Player.css'
-import { Vector2 } from 'three'
+import { Vector2, Euler } from 'three'
 
 // let imageCapture
 // let texture
@@ -21,6 +21,7 @@ function Player({ player, isLocalPlayer, t }) {
     const [height, setHeight] = useState(0)
     const [laser, setLaser] = useState(null)
     const { size } = useThree()
+    const lightRef = useRef()
     // const [tick, setTick] = useState(0)
 
     useDOM(['#player-label-' + player.id], ["md2-root-" + player.id])
@@ -118,6 +119,11 @@ function Player({ player, isLocalPlayer, t }) {
             laser.rotation.y = -md2.bodyOrientation
             laser.geometry.setPositions([0, 20, 5, tar.x, tar.y, tar.z])
             laser.geometry.needsUpdate = true
+
+            if (lightRef.current) {
+                lightRef.current.target.position.copy(player.target)
+                lightRef.current.target.updateMatrixWorld()
+            }
         }
     })
 
@@ -125,6 +131,19 @@ function Player({ player, isLocalPlayer, t }) {
         <mesh>
             {md2 && 
                 <>
+                    <spotLight 
+                        ref={lightRef}
+                        castShadow
+                        position={[player.position.x, player.position.y + 350, player.position.z]}
+                        args={[0x9999ff]}
+                        intensity={4}
+                        penumbra={0.5} 
+                        shadow-camera-fov={45}
+                        shadow-camera-near={1}
+                        shadow-camera-far={12000}
+                        shadow-mapSize-width={1024}
+                        shadow-mapSize-height={1024}
+                    />
                     <primitive object={md2.root} onClick={e => console.log('click')}>
                         {/* <mesh position={[0, 200, -100]}>
                             <planeBufferGeometry attach="geometry" args={[250, 150]} />
