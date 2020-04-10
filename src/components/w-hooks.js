@@ -1,6 +1,6 @@
 import { useThree, useFrame } from 'react-three-fiber'
 import Util from '../Util'
-import { Vector3, Vector2 } from 'three'
+import { Vector3, Vector2, Quaternion } from 'three'
 import usePlayground from '../playground'
 import Const from '../constants'
 
@@ -49,23 +49,35 @@ const getGridSnapPoint = (e, partialPoints, cellSize) => {
     }
 
     const relPoint = e.point.clone().sub(firstPartial)
-    const rotation = e.object.rotation.clone()
-    const normal = e.face.normal.clone().applyEuler(rotation)
-    const upVec = new Vector3(0, 1, 0).applyEuler(rotation)
-    const rightVec = upVec.clone().cross(normal)
+    const objectRotation = e.object.rotation.clone()
+    const normal = e.face.normal.clone().applyEuler(objectRotation).normalize()
 
-    const u = rightVec.dot(relPoint)
-    const v = upVec.dot(relPoint)
+    // These axis are based on the un-transformed THREE.PlaneGeometry
+    const gridPlaneNormal = new Vector3(0, 0, 1)
+    const gridPlaneUp = new Vector3(0, 1, 0)
+    const gridPlaneRight = new Vector3(1, 0, 0)
+
+    // We rotate the default plane axes to be in line with the surface
+    // the snap grid is presently displayed on
+    const planeRotation = new Quaternion()
+    planeRotation.setFromUnitVectors(gridPlaneNormal, normal)
+
+    gridPlaneUp.applyQuaternion(planeRotation)
+    gridPlaneRight.applyQuaternion(planeRotation)
+
+    const u = gridPlaneRight.dot(relPoint)
+    const v = gridPlaneUp.dot(relPoint)
     const uv = new Vector2(u + cellSize / 2, v + cellSize / 2)
 
     const modVec = new Vector2(Math.abs(Util.fract(uv.x / cellSize)) - 0.5, Math.abs(Util.fract(uv.y / cellSize)) - 0.5)
     const inRange = (1 - Util.step(Const.CELL_SNAP_RATIO, modVec.length())) > 0
 
     if (inRange) {
+        // convert snap point from UV to world coords
         const snapU = Math.floor(uv.x / cellSize) * cellSize
         const snapV = Math.floor(uv.y / cellSize) * cellSize
-        const rightPoint = rightVec.clone().multiplyScalar(snapU)
-        const upPoint = upVec.clone().multiplyScalar(snapV)
+        const rightPoint = gridPlaneRight.clone().multiplyScalar(snapU)
+        const upPoint = gridPlaneUp.clone().multiplyScalar(snapV)
         const planePoint = rightPoint.clone().add(upPoint)
         const x = new Vector3(1, 0, 0)
         const y = new Vector3(0, 1, 0)
@@ -74,11 +86,8 @@ const getGridSnapPoint = (e, partialPoints, cellSize) => {
 
         const worldSnapPoint = firstPartial.clone().add(relWorldSnapPoint)
 
-        // console.log("snap!", worldSnapPoint, firstPartial)
-
         return worldSnapPoint
     } else {
-        // console.log("no snap :(")
         return null
     }
 }
@@ -98,7 +107,6 @@ const snap = (state, e) => {
         return e.point
 
     } else {
-        // console.log("no first partial!")
         return e.point
     }
 }
