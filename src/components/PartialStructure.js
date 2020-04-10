@@ -13,7 +13,7 @@ import Const from '../constants'
 extend({ LineMaterial, LineGeometry, Line2 })
 
 const MAX_POLY_POINTS = 50
-const SNAP_RADIUS = 22
+const SNAP_RADIUS = 30
 
 function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc}) {
     const [points, setPoints] = useState([])
@@ -67,6 +67,7 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
             const normal = e.face.normal.clone().applyEuler(rotation)
 
             if (points.length === 0) {
+                console.log("setting parent normal")
                 setParentNormal(normal)
                 setParentObject(e.object)
             }
@@ -96,20 +97,9 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
             return
         }
 
-        const modCursorPoint = snappedPoint.clone()
         if (points.length > 2) {
-            const snapDiffVec = points[0].clone().sub(snappedPoint)
-
-            // within snap radius
-            if (snapDiffVec.length() < SNAP_RADIUS) {
-                modCursorPoint.add(snapDiffVec)
-                setInSnapRange(true)
-            } else {
-                setInSnapRange(false)
-            }
-
             // Check if first and last points overlap
-            if (points[0].clone().sub(points[points.length - 1]).length() < 0.1) {
+            if (Util.pointsAreEqual3D(points[0], points[points.length - 1], 0.1)) {
                 const pointsWithoutLast = points.slice(0, points.length - 1)
                 const structure = { id: Util.generateId(), owner: player.id, points: pointsWithoutLast, normal: parentNormal, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1 } }
 
@@ -119,18 +109,18 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
             }
         }
             
-        const finalPoints = points.reduce((acc, { x, y, z }) => [...acc, x, y, z], [], [])
-        finalPoints.push(modCursorPoint.x, modCursorPoint.y, modCursorPoint.z)
+        const drawPoints = points.reduce((acc, { x, y, z }) => [...acc, x, y, z], [], [])
+        drawPoints.push(snappedPoint.x, snappedPoint.y, snappedPoint.z)
 
         // The number of points must always be exactly the same,
         // so will fill the end with the last point added repeatedly
-        while (finalPoints.length < MAX_POLY_POINTS*3) {
-            finalPoints.push(finalPoints[finalPoints.length - 3], finalPoints[finalPoints.length - 2], finalPoints[finalPoints.length - 1])
+        while (drawPoints.length < MAX_POLY_POINTS*3) {
+            drawPoints.push(drawPoints[drawPoints.length - 3], drawPoints[drawPoints.length - 2], drawPoints[drawPoints.length - 1])
         }
 
-        finalPoints.length = Math.min(MAX_POLY_POINTS*3, finalPoints.length)
+        drawPoints.length = Math.min(MAX_POLY_POINTS*3, drawPoints.length)
 
-        geom.setPositions(finalPoints)
+        geom.setPositions(drawPoints)
     }, [points, snappedPoint])
 
     return  (

@@ -9,7 +9,6 @@ import ModelFactory from '../ModelFactory'
 import Util from '../Util'
 import './Player.css'
 import { Vector2 } from 'three'
-import {useSnapping} from './w-hooks'
 
 // let imageCapture
 // let texture
@@ -22,7 +21,6 @@ function Player({ player, isLocalPlayer, t }) {
     const [height, setHeight] = useState(0)
     const [laser, setLaser] = useState(null)
     const { size } = useThree()
-    const { snap } = useSnapping()
     // const [tick, setTick] = useState(0)
 
     useDOM(['#player-label-' + player.id], ["md2-root-" + player.id])
