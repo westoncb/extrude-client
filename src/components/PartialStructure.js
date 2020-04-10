@@ -89,7 +89,7 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
             MeshEvents.removeListener("partial_structure")
         }
 
-    }, [points, snappedPoint])
+    }, [points, snappedPoint, visible])
 
     const ref = useUpdate(geom => {
         if (points.length < 1) {
@@ -145,6 +145,7 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
                     mouse={gridConfig.mouse}
                     cellSize={gridConfig.cellSize}
                     targetUV={gridConfig.targetUV}
+
                 />
             }
         </>
