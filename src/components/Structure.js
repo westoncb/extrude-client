@@ -95,10 +95,10 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                     <extrudeBufferGeometry attach="geometry" args={[baseShape, { depth: 1, bevelSize: 1, bevelThickness: 1, bevelSegments: 2 }]} />
 
                     {highlightExtrusionSurface &&
-                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                        <meshPhysicalMaterial attach="material" color={0xffffff} emissive={0x0033dd} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
                     {!highlightExtrusionSurface &&
-                        <meshPhysicalMaterial attach="material" color={0x000000} emissive={0x0033dd} emissiveIntensity={0.05} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                        <meshPhysicalMaterial attach="material" color={0xffffff} emissive={0x0033dd} emissiveIntensity={0.15} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
 
                 </mesh>
