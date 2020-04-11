@@ -14,6 +14,7 @@ extend({ LineMaterial, LineGeometry, Line2 })
 
 const MAX_POLY_POINTS = 50
 const SNAP_RADIUS = 30
+const Z_FIGHT_SHIFT_DIST = 0.2
 
 function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc}) {
     const [points, setPoints] = useState([])
@@ -33,7 +34,7 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
         const rotation = e.object.rotation.clone()
         const normal = e.face.normal.clone().applyEuler(rotation)
 
-        const zFightingShift = normal.clone().multiplyScalar(0.2)
+        const zFightingShift = normal.clone().multiplyScalar(Z_FIGHT_SHIFT_DIST)
         const firstPointPos = points[0].clone().add(zFightingShift)
         const cursorPos = e.point.clone().add(zFightingShift)
         const sameNormals = normal.clone().sub(parentNormal).length() < 0.1
@@ -100,7 +101,11 @@ function PartialStructure({player, snappedPoint, dispatch, finishStructureFunc})
         if (points.length > 2) {
             // Check if first and last points overlap
             if (Util.pointsAreEqual3D(points[0], points[points.length - 1], 0.1)) {
-                const pointsWithoutLast = points.slice(0, points.length - 1)
+                const pointsWithoutLast = points.slice(0, points.length - 1).map(p => {
+                    
+                    // undo our earlier z-fighting shift
+                    return p.clone().sub(parentNormal.clone().multiplyScalar(Z_FIGHT_SHIFT_DIST + 0.1))
+                })
                 const structure = { id: Util.generateId(), owner: player.id, points: pointsWithoutLast, normal: parentNormal, extrusionParams: { depth: 4, row: 0, theta: 0, bevelThickness: 3, bevelSize: 4, bevelSegments: 4, steps: 1 } }
 
                 finishStructureFunc(structure)
