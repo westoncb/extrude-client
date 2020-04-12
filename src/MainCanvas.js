@@ -41,7 +41,7 @@ const CameraController = ({localPlayer, mode}) => {
             const target = new Vector3(targetObj.x, targetObj.y, targetObj.z)
 
             const toTarget = target.clone().sub(shiftedPosition).normalize()
-            const extension = toTarget.clone().multiplyScalar(-200 * camZoom)
+            const extension = toTarget.clone().multiplyScalar(-Math.min(target.clone().sub(shiftedPosition).length(), 300) * 1.1 * camZoom)
             extension.z = Math.max(Math.abs(extension.z), 50) * Math.sign(extension.z)
             extension.y = Math.max(extension.y, 50)
 
@@ -54,8 +54,8 @@ const CameraController = ({localPlayer, mode}) => {
             camera.position.copy(camera.position.lerp(camDest, 0.005 * scale))
 
 
-            const newLookAt = lastLookAtVec.lerp(camLookAtDest, 0.05).clone()
-            camera.lookAt(newLookAt)
+            // const newLookAt = lastLookAtVec.lerp(camLookAtDest, 0.2).clone()
+            camera.lookAt(camLookAtDest)
             camera.updateProjectionMatrix()
         }
     })
@@ -248,7 +248,7 @@ function MainCanvas({playerInfo}) {
             <Canvas
                 style={{ backgroundColor: "#789" }}
                 gl={{ antialias: false, alpha: false}}
-                pixelRatio={1}
+                pixelRatio={window.pixelRatio}
                 camera={{ position: [0, 10, 10], near: 1, far: 4000 }}
                 shadowMap
                 onCreated={({ gl }) => {
@@ -342,6 +342,17 @@ function MainCanvas({playerInfo}) {
                         <primitive attach="map" object={grassTexture} repeat={[64, 64]} wrapS={THREE.RepeatWrapping} wrapT={THREE.RepeatWrapping} encoding={THREE.sRGBEncoding}/>
                     </meshStandardMaterial>
                 </mesh>
+
+                {localPlayer &&
+                    <mesh
+                        onPointerMove={handleMeshMouseMove}
+                        position={[localPlayer.position.x, localPlayer.position.y, localPlayer.position.z]}
+                    >
+                        <sphereBufferGeometry attach="geometry" args={[5000]} />
+                        <meshStandardMaterial attach="material" color={0x2266ff} roughness={0.55} metalness={0.8} side={THREE.DoubleSide} />
+                    </mesh>
+                }
+
             </Canvas>
             {chatVisible &&
                 <ChatWindow players={state.players} sendChatMessage={sendChatMessage} localPlayer={localPlayer} messages={state.messages} hideChat={() => setChatVisible(false)}/>
