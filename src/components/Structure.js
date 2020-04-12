@@ -81,11 +81,7 @@ function Structure({structure, updateStructure, active, player, onPointerMove, o
                     }
 
                     {!showHighlightedMaterial &&
-                        // Nice white
-                        // <meshPhysicalMaterial attach="material" color={0xffffff} metalness={0.9} roughness={0} clearcoat clearcoatRoughness={0.25} />
-
-                        // Nice black
-                        <meshPhysicalMaterial attach="material" color={0xffffff} emmissive={0x00ff00} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
+                        <meshPhysicalMaterial attach="material" color={0x101010} emmissive={0x00ff00} metalness={0.9} roughness={0.1} clearcoat clearcoatRoughness={0.25} />
                     }
                 </mesh>
             }
