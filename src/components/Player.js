@@ -116,7 +116,9 @@ function Player({ player, isLocalPlayer, t }) {
 
             tar.sub(pos)
 
-            laser.rotation.y = -md2.bodyOrientation
+            player.yRotation = -md2.bodyOrientation
+
+            laser.rotation.y = player.yRotation
             laser.geometry.setPositions([0, 20, 5, tar.x, tar.y, tar.z])
             laser.geometry.needsUpdate = true
 

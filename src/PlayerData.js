@@ -13,7 +13,8 @@ class Player {
                     visibleMessages: [],
                     keyStates: {},
                     target: new Vector3(),
-                    skindex: (name.length * 5003) % player_skin_count
+                    skindex: (name.length * 5003) % player_skin_count,
+                    yRotation: 0
                 }
     }
 
