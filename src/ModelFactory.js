@@ -2,7 +2,7 @@ import { MD2CharacterComplex } from 'three/examples/jsm/misc/MD2CharacterComplex
 import { MathUtils, Vector3 } from 'three'
 import Util from './Util'
 
-const WEAPONS_ENABLED = true
+const WEAPONS_ENABLED = false
 const MD2_SCALE = 1
 const MD2_CONTROLS = {
     moveForward: false,
