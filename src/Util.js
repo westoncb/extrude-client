@@ -126,7 +126,7 @@ class Util {
     From: https://github.com/math-utils/area-polygon
   */
     static polygonArea(points) {
-        let det = 0;
+        let det = 0; 
 
         points = points.map(point => {
             if (!Array.isArray(point)) return point;
@@ -163,6 +163,10 @@ class Util {
     static scratch1 = new Vector3()
     static vecsEqual3D(v1, v2, threshold = 0.001) {
         return this.scratch1.subVectors(v1, v2).length() < threshold
+    }
+
+    static clamp(min, max, val) {
+        return Math.min(max, Math.max(min, val))
     }
 }
 
