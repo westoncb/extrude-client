@@ -88,8 +88,8 @@ class ModelFactory {
 
                 // Rotate toward 'target' (where ray cast from cursor hits scene object)
                 const forwardVec = new Vector3(0, 0, 1).applyAxisAngle(new Vector3(0, 1, 0), self.bodyOrientation)
-                const target = new Vector3(self.target.x, self.target.y, self.target.z)
-                const toTarget = target.clone().sub(self.root.position).normalize()
+                const target = new Vector3(self.target.x, 0, self.target.z)
+                const toTarget = target.clone().sub(new Vector3(self.root.position.x, 0, self.root.position.z)).normalize()
                 toTarget.y = 0
                 const rotationGap = forwardVec.cross(toTarget).y
                 self.bodyOrientation += rotationGap * delta * 10
