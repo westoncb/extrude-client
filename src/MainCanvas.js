@@ -32,7 +32,7 @@ let camZoom = 1
 const CameraController = ({localPlayer, mode}) => {
     const { camera, scene } = useThree()
 
-    useFrame(() => {
+    useFrame((info, delta) => {
         stats.update()
         
         if (mode === Const.MODE_DEFAULT) {
@@ -46,14 +46,14 @@ const CameraController = ({localPlayer, mode}) => {
             // This is all to get the 'playerProxy' oriented the same as the player model
             const target = new Vector3(localPlayer.target.x, localPlayer.target.y, localPlayer.target.z)
             const targetDirection = target.clone().sub(playerProxy.position).normalize()
-            const targetDirZX = new Vector3(targetDirection.x, 0, targetDirection.z)
+            const targetDirZX = new Vector3(targetDirection.x, 0, targetDirection.z).normalize()
 
             // DDisplay.show("targetDirZX", targetDirZX)
 
             const quat = new THREE.Quaternion().setFromUnitVectors(playerStartingForwardDir, targetDirZX)
             playerProxy.rotateY(Math.PI)
             playerProxy.quaternion.multiply(quat)
-            playerProxy.updateMatrixWorld() 
+            playerProxy.updateMatrixWorld()
 
             // DDisplay.show("globalTarget", target.clone())
 
@@ -79,16 +79,17 @@ const CameraController = ({localPlayer, mode}) => {
             const camDest = playerProxy.localToWorld(finalCamDestLocal.clone())
 
             // DDisplay.show("y-axis angle (constrained)", angle)
-            DDisplay.show("camDest-local", finalCamDestLocal.clone())
-            DDisplay.show("camDest", camDest)
+            // DDisplay.show("camDest-local", finalCamDestLocal.clone())
+            // DDisplay.show("camDest", camDest)
 
             const between = camDest.clone().sub(camera.position)
             const dist = between.length()
 
             // map dist to [0, PI/2]
             const normDist = Util.clamp(0, 1, (dist - 50) / (500 - 50)) * Math.PI/2
-            const increment = (Util.step(500, dist) * 0.1 + 
-                              Util.step(50, dist) * (Math.sin(normDist) * 0.2)) * Util.smoothstep(30, 40, dist)
+            const increment = (Util.step(500, dist) * 15 * delta + 
+                              Util.step(50, dist) * (Math.sin(normDist) * 3*delta)) * 
+                              Util.smoothstep(40, 50, dist)
 
             camera.position.copy(camera.position.lerp(camDest, increment))
 
