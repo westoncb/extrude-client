@@ -14,14 +14,16 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
 import './MainCanvas.css'
-import { Vector3, MathUtils } from 'three'
+import { Vector3, MathUtils, Object3D, Euler } from 'three'
 import { snap } from './components/w-hooks'
 import {mousePos, keyStates} from './global'
+import Util from './Util'
+import DDisplay from './ddisplay'
 
 extend({ EffectComposer, RenderPass, UnrealBloomPass, SSAOPass })
 
 const stats = new Stats()
-const camDest = new Vector3(0, 100, 100)
+// const camDest = new Vector3(0, 100, 100)
 const camLookAtDest = new Vector3(0, 0, 0)
 const lastLookAtVec = new Vector3()
 
@@ -34,28 +36,68 @@ const CameraController = ({localPlayer, mode}) => {
         stats.update()
         
         if (mode === Const.MODE_DEFAULT) {
-            const positionObj = localPlayer.position
-            const targetObj = localPlayer.target
-            const position = new Vector3(positionObj.x, positionObj.y, positionObj.z)
-            const shiftedPosition = position.set(position.x, position.y + 70, position.z)
-            const target = new Vector3(targetObj.x, targetObj.y, targetObj.z)
 
-            const toTarget = target.clone().sub(shiftedPosition).normalize()
-            const extension = toTarget.clone().multiplyScalar(-Math.min(target.clone().sub(shiftedPosition).length(), 300) * 1.1 * camZoom)
-            extension.z = Math.max(Math.abs(extension.z), 50) * Math.sign(extension.z)
-            extension.y = Math.max(extension.y, 50)
+            const playerStartingForwardDir = new Vector3(0, 0, 1)
 
-            camDest.copy(position.clone().add(extension))
+            const playerProxy = new Object3D()
+            playerProxy.position.set(localPlayer.position.x, localPlayer.position.y, localPlayer.position.z)
+            
 
-            camLookAtDest.copy(position)
+            // This is all to get the 'playerProxy' oriented the same as the player model
+            const target = new Vector3(localPlayer.target.x, localPlayer.target.y, localPlayer.target.z)
+            const targetDirection = target.clone().sub(playerProxy.position).normalize()
+            const targetDirZX = new Vector3(targetDirection.x, 0, targetDirection.z)
 
+            DDisplay.show("targetDirZX", targetDirZX)
 
-            const scale = MathUtils.clamp(camera.position.clone().sub(camDest).length() / 10, 0.1, 4)
-            camera.position.copy(camera.position.lerp(camDest, 0.005 * scale))
+            const quat = new THREE.Quaternion().setFromUnitVectors(playerStartingForwardDir, targetDirZX)
+            playerProxy.rotateY(Math.PI)
+            playerProxy.quaternion.multiply(quat)
+            playerProxy.updateMatrixWorld() 
 
+            // DDisplay.show("globalTarget", target.clone())
 
-            // const newLookAt = lastLookAtVec.lerp(camLookAtDest, 0.2).clone()
-            camera.lookAt(camLookAtDest)
+            // Desired position of camera is player local coords
+            const camOffset = new Vector3(0, 200, 210)
+            const localTarget = playerProxy.worldToLocal(target.clone())
+            
+            // DDisplay.show("player-direction", playerProxy.getWorldDirection())
+            // DDisplay.show("localTarget", localTarget)
+
+            const baseLocalCamDir = localTarget.clone().sub(camOffset).normalize().negate()
+
+            // Rather than use baseLocalCamDir directly we figure out the angle between the
+            // y-axis and it, so that we can express constraints on that angle, and then
+            // we rotate the y-axis using the constrained angle.
+            const yAxis = new Vector3(0, 1, 0)
+            const camDirY = new Vector3(0, baseLocalCamDir.y, baseLocalCamDir.z)
+            let angle = yAxis.angleTo(camDirY)
+            angle = Math.sign(angle) * Math.max(Math.abs(angle), Math.PI / 5)
+            angle = Math.sign(angle) * Math.min(Math.PI/2.8, Math.abs(angle))
+            const finalCamDestLocal = yAxis.clone().applyAxisAngle(new Vector3(1, 0, 0), angle).multiplyScalar(camOffset.length())
+
+            const camDest = playerProxy.localToWorld(finalCamDestLocal.clone())
+
+            // DDisplay.show("y-axis angle (constrained)", angle)
+            DDisplay.show("camDest-local", finalCamDestLocal.clone())
+            DDisplay.show("camDest", camDest)
+
+            const between = camDest.clone().sub(camera.position)
+            const dist = between.length()
+
+            // map dist to [0, PI/2]
+            const normDist = Util.clamp(0, 1, (dist - 50) / (500 - 50)) * Math.PI/2
+            const increment = (Util.step(500, dist) * 0.1 + 
+                              Util.step(50, dist) * (Math.sin(normDist) * 0.2)) * Util.smoothstep(30, 40, dist)
+
+            camera.position.copy(camera.position.lerp(camDest, increment))
+
+            // This way camera doesn't bob up and down when player jumps
+            const posWithFixedY = playerProxy.position.clone()
+            posWithFixedY.y = 100
+
+            camera.lookAt(posWithFixedY)
+            camera.updateMatrixWorld()
             camera.updateProjectionMatrix()
         }
     })
@@ -303,6 +345,8 @@ function MainCanvas({playerInfo}) {
                 {mode === Const.MODE_DEFAULT &&
                     <PartialStructure player={localPlayer} snappedPoint={snappedPoint} dispatch={dispatch} finishStructureFunc={finishStructure} />
                 }
+
+                {/* <axesHelper args={[70]}/> */}
 
                 {Object.values(state.structures).map(structure => <Structure 
                                                 key={structure.id}
