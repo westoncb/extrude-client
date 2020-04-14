@@ -48,7 +48,7 @@ const CameraController = ({localPlayer, mode}) => {
             const targetDirection = target.clone().sub(playerProxy.position).normalize()
             const targetDirZX = new Vector3(targetDirection.x, 0, targetDirection.z)
 
-            DDisplay.show("targetDirZX", targetDirZX)
+            // DDisplay.show("targetDirZX", targetDirZX)
 
             const quat = new THREE.Quaternion().setFromUnitVectors(playerStartingForwardDir, targetDirZX)
             playerProxy.rotateY(Math.PI)
@@ -68,7 +68,7 @@ const CameraController = ({localPlayer, mode}) => {
 
             // Rather than use baseLocalCamDir directly we figure out the angle between the
             // y-axis and it, so that we can express constraints on that angle, and then
-            // we rotate the y-axis using the constrained angle.
+            // we rotate the y-axis (pivoting on the x-axis) using the constrained angle.
             const yAxis = new Vector3(0, 1, 0)
             const camDirY = new Vector3(0, baseLocalCamDir.y, baseLocalCamDir.z)
             let angle = yAxis.angleTo(camDirY)
