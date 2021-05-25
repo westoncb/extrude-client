@@ -273,7 +273,7 @@ function InputHandler({
 function MainCanvas({ playerInfo }) {
     useEffect(() => {
         execute("initialize", { player: playerInfo })
-        console.log("executed initialize!")
+        console.log("executed initialize!", playerInfo)
     }, [playerInfo])
 
     const [chatVisible, setChatVisible] = useState(false)
@@ -287,7 +287,12 @@ function MainCanvas({ playerInfo }) {
     const [mode, setMode] = useState(Const.MODE_DEFAULT)
     const [shiftDown, setShiftDown] = useState(false)
     const { execute, dispatch, state } = usePlayground()
-    const localPlayer = state.players[state.localPlayerId]
+
+    // This is a hack (setting default player object) since I don't yet know why
+    // localPlayer is undefined sometimes
+    const localPlayer = state.players[state.localPlayerId] ?? {
+        ...playerInfo,
+    }
     const [lastSnappedPoint, setLastSnappedPoint] = useState(new Vector3())
     let snappedPoint = lastSnappedPoint
 
