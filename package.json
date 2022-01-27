@@ -13,7 +13,7 @@
     "react-scripts": "3.4.1",
     "react-three-fiber": "^4.0.23",
     "socket.io-client": "^2.3.0",
-    "three": "^0.114.0"
+    "three": "^0.137.0"
   },
   "scripts": {
     "start": "PORT=3001 react-scripts start",
