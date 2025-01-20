@@ -1,14 +1,17 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import React from "react";
+import ReactDOM from "react-dom/client"; // Note the change in import path
+import "./index.css";
+import App from "./App";
+// If you no longer use service workers, you can remove this import entirely
+import * as serviceWorker from "./serviceWorker";
 
-ReactDOM.render(
+// Create a root for rendering
+const root = ReactDOM.createRoot(document.getElementById("root"));
+
+root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-  document.getElementById('root')
 );
 
 // If you want your app to work offline and load faster, you can change
